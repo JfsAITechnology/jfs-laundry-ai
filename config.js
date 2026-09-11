@@ -1,5 +1,4 @@
-
-// config.js — Multi-Tenant Database & Master Config JFS Laundry AI
+// config.js — Master Config & Multi-Tenant Parser
 
 const TENANTS_DATA = {
   "default": {
@@ -17,7 +16,7 @@ const TENANTS_DATA = {
   "sumber-rejeki": {
     "name": "Laundry Sumber Rejeki",
     "company": "Sumber Rejeki Group",
-    "logo": "logo-jfs.png", // Gantilah dengan path logo kustom jika ada
+    "logo": "logo-jfs.png",
     "waNumber": "6281234567890",
     "address": "Jl. Raya Tunjungan No. 12, Surabaya",
     "pricelist": {
@@ -40,9 +39,14 @@ const TENANTS_DATA = {
   }
 };
 
-// Logika Multi-Tenant Parser
+// URL Query Parameter Parser
 const urlParams = new URLSearchParams(window.location.search);
-const tenantId = urlParams.get('id') || 'default';
+const activeTenantId = urlParams.get('id') || 'default';
 
-// Set active config secara dinamis (fallback ke default jika ID tidak ditemukan)
-const APP_CONFIG = TENANTS_DATA[tenantId] || TENANTS_DATA['default'];
+// Cek apakah Admin pernah menyimpan editan kustom di LocalStorage
+const customStorageData = localStorage.getItem(`tenant_cfg_${activeTenantId}`);
+
+// Set APP_CONFIG Aktif
+const APP_CONFIG = customStorageData 
+  ? JSON.parse(customStorageData) 
+  : (TENANTS_DATA[activeTenantId] || TENANTS_DATA['default']);
