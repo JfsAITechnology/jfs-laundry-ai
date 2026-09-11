@@ -1,31 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JFS Laundry AI — Dashboard Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen font-sans p-4 md:p-6">
 
-function initAdmin() {
-      document.getElementById('tenant-select').value = currentTenantKey;
+  <!-- Top Navbar Admin -->
+  <header class="max-w-4xl mx-auto bg-slate-900 text-white rounded-xl p-4 shadow-md mb-6 flex flex-wrap justify-between items-center gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden bg-slate-800 border border-slate-700">
+        <img id="admin-logo" src="logo-jfs.png" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/40'">
+      </div>
+      <div>
+        <h1 class="font-bold text-lg leading-tight">Dashboard Admin</h1>
+        <p class="text-xs text-slate-400">Pengaturan Toko & Layanan Multi-Tenant</p>
+      </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="flex items-center gap-2">
+      <button type="button" onclick="copyCustomerLink()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm">
+        📋 <span id="copy-btn-text">Salin Link Customer</span>
+      </button>
+      <a id="btn-preview-customer" href="index.html" target="_blank" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm">
+        👁️ Buka Portal
+      </a>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Tenant Selector Bar -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <label for="tenant-select" class="text-xs font-bold text-slate-600">Pilih Tenant / Toko:</label>
+        <select id="tenant-select" onchange="switchTenant(this.value)" class="border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-bold bg-slate-50 focus:outline-none focus:border-blue-500">
+          <option value="default">JFS Laundry AI Demo (Default)</option>
+          <option value="sumber-rejeki">Laundry Sumber Rejeki</option>
+          <option value="clean-express">Clean Express Laundry</option>
+        </select>
+      </div>
+      <div class="text-xs text-slate-500 flex items-center gap-1">
+        <span>URL Customer:</span>
+        <input type="text" id="customer-url-display" readonly class="bg-slate-100 border border-slate-200 px-2 py-0.5 rounded text-blue-600 font-mono text-[11px] w-48 md:w-64 focus:outline-none select-all">
+      </div>
+    </div>
+
+    <form onsubmit="saveConfig(event)" class="space-y-6">
       
-      // Dynamic Full Customer URL
+      <!-- Section 1: Profil & Informasi Bisnis -->
+      <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <h2 class="text-sm font-bold text-slate-800 border-b border-slate-100 pb-2 flex items-center gap-2">
+          ⚙️ Profil & Informasi Bisnis
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div>
+            <label class="block font-medium text-slate-600 mb-1">Nama Toko / Laundry</label>
+            <input type="text" id="input-name" required class="w-full border border-slate-300 rounded-lg p-2.5 focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block font-medium text-slate-600 mb-1">Nomor WhatsApp Admin (Format: 628xxx)</label>
+            <input type="text" id="input-wa" required class="w-full border border-slate-300 rounded-lg p-2.5 focus:outline-none focus:border-blue-500">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block font-medium text-slate-600 mb-1">Alamat / Lokasi Operasional</label>
+            <input type="text" id="input-address" required class="w-full border border-slate-300 rounded-lg p-2.5 focus:outline-none focus:border-blue-500">
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 2: Kelola Menu Layanan & Harga -->
+      <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+            🏷️ Kelola Menu Layanan & Harga
+          </h2>
+          <button type="button" onclick="addServiceRow()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+            ➕ Tambah Layanan Baru
+          </button>
+        </div>
+
+        <p class="text-xs text-slate-500">
+          Ubah nama layanan, satuan, dan tarif di bawah ini. Data ini akan langsung memperbarui kalkulasi dan jawaban AI di sisi Customer.
+        </p>
+
+        <!-- Dynamic Service List Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200 text-slate-600">
+                <th class="p-2.5 font-bold">Key ID</th>
+                <th class="p-2.5 font-bold">Nama Layanan</th>
+                <th class="p-2.5 font-bold">Harga (Rp)</th>
+                <th class="p-2.5 font-bold text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="services-table-body" class="divide-y divide-slate-100">
+              <!-- Baris diisi oleh JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Action Footer -->
+      <div class="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200">
+        <button type="button" onclick="resetToDefault()" class="text-xs text-rose-600 hover:underline font-semibold">
+          🔄 Reset ke Default
+        </button>
+        <button type="submit" class="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold px-6 py-3 rounded-xl transition flex items-center gap-2">
+          💾 Simpan Semua Perubahan
+        </button>
+      </div>
+
+    </form>
+  </main>
+
+  <script>
+    // Master data cadangan internal jika config external gagal
+    const DEFAULT_DATA = {
+      "default": { name: "JFS Laundry AI Demo", waNumber: "6282230010172", address: "Sidosermo, Wonocolo", pricelist: { kiloan: 6000, setrika: 8000, express: 15000 } },
+      "sumber-rejeki": { name: "Laundry Sumber Rejeki", waNumber: "6281234567890", address: "Jl. Raya Tunjungan No. 12", pricelist: { kiloan: 8000, setrika: 10000, express: 18000 } },
+      "clean-express": { name: "Clean Express Laundry", waNumber: "6289876543210", address: "Jl. Gubeng Masjid No. 45", pricelist: { kiloan: 7000, setrika: 9000, express: 16000 } }
+    };
+
+    let currentTenantKey = 'default';
+    let currentConfigData = {};
+    let fullCustomerUrl = '';
+
+    function initAdmin() {
+      const urlParams = new URLSearchParams(window.location.search);
+      currentTenantKey = urlParams.get('id') || 'default';
+
+      // Pastikan dropdown sesuai tenant ID
+      const selectElem = document.getElementById('tenant-select');
+      if (selectElem) selectElem.value = currentTenantKey;
+
+      // Buat URL Customer
       const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
       fullCustomerUrl = `${baseUrl}?id=${currentTenantKey}`;
       
       document.getElementById('customer-url-display').value = fullCustomerUrl;
       document.getElementById('btn-preview-customer').href = fullCustomerUrl;
 
-      // Load Data (LocalStorage -> Tenant Master -> Auto-Fallback)
+      // Load Data dari LocalStorage atau Master Cadangan
       const savedData = localStorage.getItem(`tenant_cfg_${currentTenantKey}`);
       if (savedData) {
-        currentConfigData = JSON.parse(savedData);
-      } else if (typeof TENANTS_DATA !== 'undefined' && TENANTS_DATA[currentTenantKey]) {
-        currentConfigData = JSON.parse(JSON.stringify(TENANTS_DATA[currentTenantKey]));
+        try {
+          currentConfigData = JSON.parse(savedData);
+        } catch(e) {
+          currentConfigData = DEFAULT_DATA[currentTenantKey] || DEFAULT_DATA['default'];
+        }
       } else {
-        // Fallback untuk tenant baru yang belum ada di daftar
-        currentConfigData = {
+        currentConfigData = DEFAULT_DATA[currentTenantKey] || {
           name: `Laundry ${currentTenantKey.toUpperCase()}`,
           waNumber: "6282230010172",
           address: "Surabaya",
-          pricelist: { kiloan: 7000, setrika: 9000 }
+          pricelist: { kiloan: 7000, express: 15000 }
         };
       }
 
-      // Fill Input Form
+      // Isi nilai Form
       document.getElementById('input-name').value = currentConfigData.name || '';
       document.getElementById('input-wa').value = currentConfigData.waNumber || '';
       document.getElementById('input-address').value = currentConfigData.address || '';
@@ -33,15 +170,83 @@ function initAdmin() {
       renderServicesTable();
     }
 
+    function renderServicesTable() {
+      const tbody = document.getElementById('services-table-body');
+      tbody.innerHTML = '';
+
+      const pricelist = currentConfigData.pricelist || {};
+      const keys = Object.keys(pricelist);
+
+      if (keys.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Belum ada layanan. Klik 'Tambah Layanan Baru'.</td></tr>`;
+        return;
+      }
+
+      keys.forEach(key => {
+        const row = document.createElement('tr');
+        row.className = "service-row border-b border-slate-100";
+        row.innerHTML = `
+          <td class="p-2.5 font-mono text-slate-400">
+            <input type="hidden" class="service-key" value="${key}">
+            ${key}
+          </td>
+          <td class="p-2.5">
+            <input type="text" class="service-label border border-slate-300 rounded px-2 py-1 w-full text-xs font-medium" value="${key.toUpperCase()}">
+          </td>
+          <td class="p-2.5">
+            <input type="number" class="service-price border border-slate-300 rounded px-2 py-1 w-full text-xs font-bold text-slate-800" value="${pricelist[key]}">
+          </td>
+          <td class="p-2.5 text-center">
+            <button type="button" onclick="deleteServiceRow('${key}')" class="text-rose-500 hover:text-rose-700 font-bold text-xs">✕ Hapus</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function copyCustomerLink() {
+      navigator.clipboard.writeText(fullCustomerUrl).then(() => {
+        const btnText = document.getElementById('copy-btn-text');
+        btnText.innerText = 'Tersalin!';
+        setTimeout(() => { btnText.innerText = 'Salin Link Customer'; }, 2000);
+      }).catch(() => {
+        alert('URL Customer: ' + fullCustomerUrl);
+      });
+    }
+
+    function switchTenant(newKey) {
+      window.location.href = `admin.html?id=${newKey}`;
+    }
+
+    function addServiceRow() {
+      const inputKey = prompt("Masukkan ID/Nama Layanan Baru (contoh: sepatu, helm, bedcover):");
+      if (!inputKey) return;
+
+      const cleanKey = inputKey.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (!cleanKey) {
+        alert("Gunakan huruf/angka saja tanpa spasi.");
+        return;
+      }
+
+      if (!currentConfigData.pricelist) currentConfigData.pricelist = {};
+      currentConfigData.pricelist[cleanKey] = 10000;
+      renderServicesTable();
+    }
+
+    function deleteServiceRow(key) {
+      if (confirm(`Hapus layanan '${key}'?`)) {
+        delete currentConfigData.pricelist[key];
+        renderServicesTable();
+      }
+    }
+
     function saveConfig(e) {
       e.preventDefault();
 
-      // Ambil nilai dari input profil
       currentConfigData.name = document.getElementById('input-name').value.trim();
       currentConfigData.waNumber = document.getElementById('input-wa').value.trim();
       currentConfigData.address = document.getElementById('input-address').value.trim();
 
-      // Ambil seluruh harga dari tabel
       const rows = document.querySelectorAll('.service-row');
       const updatedPricelist = {};
 
@@ -52,12 +257,20 @@ function initAdmin() {
       });
 
       currentConfigData.pricelist = updatedPricelist;
+      localStorage.setItem(`tenant_cfg_${currentTenantKey}`, JSON.stringify(currentConfigData));
 
-      // SIMPAN KE LOCALSTORAGE BROWSER
-      try {
-        localStorage.setItem(`tenant_cfg_${currentTenantKey}`, JSON.stringify(currentConfigData));
-        alert(`✅ Data '${currentConfigData.name}' Berhasil Disimpan!\n\nSilakan buka link customer untuk melihat hasilnya.`);
-      } catch (err) {
-        alert("⚠️ Gagal menyimpan data: Memori browser penuh atau dalam mode privat ketat.");
+      alert(`✅ Pengaturan Toko '${currentConfigData.name}' Berhasil Disimpan!`);
+    }
+
+    function resetToDefault() {
+      if (confirm("Reset data ke awal?")) {
+        localStorage.removeItem(`tenant_cfg_${currentTenantKey}`);
+        initAdmin();
       }
     }
+
+    // Jalankan saat halaman dibuka
+    window.addEventListener('DOMContentLoaded', initAdmin);
+  </script>
+</body>
+</html>
