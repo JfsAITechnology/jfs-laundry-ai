@@ -1,4 +1,4 @@
-// config.js — Master Config & Multi-Tenant Parser
+// config.js — Master Config & Multi-Tenant Parser Auto-Init
 
 const TENANTS_DATA = {
   "default": {
@@ -43,10 +43,16 @@ const TENANTS_DATA = {
 const urlParams = new URLSearchParams(window.location.search);
 const activeTenantId = urlParams.get('id') || 'default';
 
-// Cek apakah Admin pernah menyimpan editan kustom di LocalStorage
+// Prioritaskan data LocalStorage editan Admin, jika kosong ambil master/default
 const customStorageData = localStorage.getItem(`tenant_cfg_${activeTenantId}`);
 
-// Set APP_CONFIG Aktif
 const APP_CONFIG = customStorageData 
   ? JSON.parse(customStorageData) 
-  : (TENANTS_DATA[activeTenantId] || TENANTS_DATA['default']);
+  : (TENANTS_DATA[activeTenantId] || {
+      name: `Laundry ${activeTenantId.toUpperCase()}`,
+      company: "JFS AI Partner",
+      logo: "logo-jfs.png",
+      waNumber: "6282230010172",
+      address: "Surabaya",
+      pricelist: { kiloan: 7000, setrika: 9000, express: 15000 }
+    });
