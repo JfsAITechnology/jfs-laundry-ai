@@ -1,1 +1,63 @@
 
+function initAdmin() {
+      document.getElementById('tenant-select').value = currentTenantKey;
+      
+      // Dynamic Full Customer URL
+      const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
+      fullCustomerUrl = `${baseUrl}?id=${currentTenantKey}`;
+      
+      document.getElementById('customer-url-display').value = fullCustomerUrl;
+      document.getElementById('btn-preview-customer').href = fullCustomerUrl;
+
+      // Load Data (LocalStorage -> Tenant Master -> Auto-Fallback)
+      const savedData = localStorage.getItem(`tenant_cfg_${currentTenantKey}`);
+      if (savedData) {
+        currentConfigData = JSON.parse(savedData);
+      } else if (typeof TENANTS_DATA !== 'undefined' && TENANTS_DATA[currentTenantKey]) {
+        currentConfigData = JSON.parse(JSON.stringify(TENANTS_DATA[currentTenantKey]));
+      } else {
+        // Fallback untuk tenant baru yang belum ada di daftar
+        currentConfigData = {
+          name: `Laundry ${currentTenantKey.toUpperCase()}`,
+          waNumber: "6282230010172",
+          address: "Surabaya",
+          pricelist: { kiloan: 7000, setrika: 9000 }
+        };
+      }
+
+      // Fill Input Form
+      document.getElementById('input-name').value = currentConfigData.name || '';
+      document.getElementById('input-wa').value = currentConfigData.waNumber || '';
+      document.getElementById('input-address').value = currentConfigData.address || '';
+
+      renderServicesTable();
+    }
+
+    function saveConfig(e) {
+      e.preventDefault();
+
+      // Ambil nilai dari input profil
+      currentConfigData.name = document.getElementById('input-name').value.trim();
+      currentConfigData.waNumber = document.getElementById('input-wa').value.trim();
+      currentConfigData.address = document.getElementById('input-address').value.trim();
+
+      // Ambil seluruh harga dari tabel
+      const rows = document.querySelectorAll('.service-row');
+      const updatedPricelist = {};
+
+      rows.forEach(row => {
+        const key = row.querySelector('.service-key').value;
+        const price = parseInt(row.querySelector('.service-price').value) || 0;
+        if (key) updatedPricelist[key] = price;
+      });
+
+      currentConfigData.pricelist = updatedPricelist;
+
+      // SIMPAN KE LOCALSTORAGE BROWSER
+      try {
+        localStorage.setItem(`tenant_cfg_${currentTenantKey}`, JSON.stringify(currentConfigData));
+        alert(`✅ Data '${currentConfigData.name}' Berhasil Disimpan!\n\nSilakan buka link customer untuk melihat hasilnya.`);
+      } catch (err) {
+        alert("⚠️ Gagal menyimpan data: Memori browser penuh atau dalam mode privat ketat.");
+      }
+    }
