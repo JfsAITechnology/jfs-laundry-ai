@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JFS Laundry AI — Smart Assistant Demo</title>
+  <title>JFS Laundry AI — Multi-Tenant Smart Assistant</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="config.js"></script>
 </head>
@@ -12,12 +12,12 @@
   <!-- Top Navbar -->
   <header class="max-w-6xl mx-auto bg-white rounded-xl p-4 shadow-sm mb-4 flex justify-between items-center border border-slate-200">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden">
-  <img src="logo-jfs.png" alt="Logo JFS" class="w-full h-full object-cover">
-</div>
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden border border-slate-100">
+        <img id="header-logo" src="logo-jfs.png" alt="Logo" class="w-full h-full object-cover">
+      </div>
       <div>
         <h1 class="font-bold text-lg leading-tight" id="header-brand">JFS Laundry</h1>
-        <p class="text-xs text-slate-500">AI Admin Demo • Laundry Express Gratis Antar Jemput</p>
+        <p class="text-xs text-slate-500" id="header-company">AI Admin Demo • Laundry Express Gratis Antar Jemput</p>
       </div>
     </div>
     <span class="bg-emerald-100 text-emerald-700 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-200">● Demo AI</span>
@@ -60,7 +60,7 @@
 
       <!-- Chat Input Form -->
       <form onsubmit="handleSend(event)" class="p-3 border-t border-slate-200 flex gap-2">
-        <input id="user-input" type="text" placeholder="Contoh: kak, bisa jemput laundry 5 kg?" class="flex-1 border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-blue-500">
+        <input id="user-input" type="text" placeholder="Contoh: kak, berapa harga cuci kiloan?" class="flex-1 border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-blue-500">
         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-xl text-sm transition">Kirim</button>
       </form>
     </section>
@@ -70,73 +70,65 @@
       <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
         <div>
           <h3 class="font-bold text-slate-800 text-base" id="side-title">JFS Laundry AI</h3>
-          <p class="text-xs text-slate-500">Contoh bagaimana AI dapat menjadi admin digital JFS.</p>
+          <p class="text-xs text-slate-500">Contoh bagaimana AI dapat menjadi admin digital toko Anda.</p>
         </div>
 
         <div class="space-y-2 text-xs border-t border-slate-100 pt-3">
           <h4 class="font-bold text-slate-700 uppercase tracking-wider text-[10px]">Informasi Bisnis</h4>
-          <div class="flex justify-between"><span class="text-slate-500">Lokasi</span><span class="font-semibold text-slate-700" id="info-location">Sidosermo, Wonocolo</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Lokasi</span><span class="font-semibold text-slate-700 text-right ml-2" id="info-location">Surabaya</span></div>
           <div class="flex justify-between"><span class="text-slate-500">Rating</span><span class="font-semibold text-slate-700">⭐ 4.9</span></div>
-          <div class="flex justify-between"><span class="text-slate-500">Telepon</span><span class="font-semibold text-slate-700" id="info-phone">0822-3001-0172</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Telepon</span><span class="font-semibold text-slate-700" id="info-phone">-</span></div>
         </div>
 
         <div class="space-y-2 text-xs border-t border-slate-100 pt-3">
           <h4 class="font-bold text-slate-700 uppercase tracking-wider text-[10px]">Contoh Layanan</h4>
-          <div class="flex justify-between"><span class="text-slate-600">Cuci Kering</span><span class="font-semibold text-slate-800" id="price-kering">Rp 6.000/kg</span></div>
-          <div class="flex justify-between"><span class="text-slate-600">Cuci Setrika</span><span class="font-semibold text-slate-800" id="price-setrika">Rp 8.000/kg</span></div>
-          <div class="flex justify-between"><span class="text-slate-600">Express</span><span class="font-semibold text-slate-800" id="price-express">Rp 15.000/kg</span></div>
+          <div class="flex justify-between"><span class="text-slate-600">Cuci Kiloan</span><span class="font-semibold text-slate-800" id="price-kiloan">Rp 0/kg</span></div>
+          <div class="flex justify-between"><span class="text-slate-600">Cuci Setrika</span><span class="font-semibold text-slate-800" id="price-setrika">Rp 0/kg</span></div>
+          <div class="flex justify-between"><span class="text-slate-600">Express</span><span class="font-semibold text-slate-800" id="price-express">Rp 0/kg</span></div>
           <div class="flex justify-between items-center"><span class="text-slate-600">Antar-Jemput</span><span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded">TERSEDIA</span></div>
-        </div>
-
-        <!-- Order Demo Box -->
-        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
-          <p class="font-bold text-slate-700">Contoh order AI</p>
-          <div class="text-[11px] text-slate-600">
-            <p><strong>ORD-DEMO-001</strong></p>
-            <p>Customer: Andi</p>
-            <p>Estimasi: 5 kg</p>
-            <p class="mt-1">Status: <span class="bg-blue-200 text-blue-800 px-1.5 py-0.5 rounded text-[10px] font-bold">Menunggu pickup</span></p>
-          </div>
         </div>
 
         <!-- WA Action Box -->
         <div class="bg-blue-50/60 p-4 rounded-xl border border-blue-100 space-y-3">
           <p class="text-xs font-bold text-slate-800">🚀 Mau pesan laundry?</p>
-          <p class="text-[11px] text-slate-500">Versi produksi dapat diarahkan langsung ke WhatsApp Admin.</p>
+          <p class="text-[11px] text-slate-500">Arahkan obrolan langsung ke WhatsApp Admin Tenant.</p>
           <button onclick="openWA()" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2">
             <span>Chat WhatsApp Admin</span>
           </button>
         </div>
 
         <p class="text-[10px] text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-200 leading-tight">
-          Prototype demo. Harga/status perlu dikonfirmasi sebelum digunakan sebagai sistem produksi.
+          Prototype demo multi-tenant. Data otomatis disesuaikan berdasarkan parameter URL <code>?id=tenant-id</code>.
         </p>
       </div>
     </section>
 
   </main>
 
-  <!-- Script Logic Sync with config.js -->
+  <!-- Dynamic UI & System Prompt Injection Script -->
   <script>
+    // Fallback jika APP_CONFIG tidak termuat
     const cfg = typeof APP_CONFIG !== 'undefined' ? APP_CONFIG : {
-      brandName: "JFS Laundry AI",
-      whatsappAdmin: "6282230010172",
-      location: "Sidosermo, Wonocolo",
-      pricing: { kering: 6000, setrika: 8000, express: 15000 }
+      name: "JFS Laundry AI Demo",
+      logo: "logo-jfs.png",
+      waNumber: "6282230010172",
+      address: "Surabaya",
+      pricelist: { kiloan: 6000, setrika: 8000, express: 15000 }
     };
 
-    // Auto Fill Data from config.js
-    document.getElementById('header-brand').innerText = cfg.brandName || "JFS Laundry";
-    document.getElementById('chat-title').innerText = cfg.brandName || "JFS Laundry AI";
-    document.getElementById('msg-brand').innerText = cfg.brandName || "JFS Laundry";
-    document.getElementById('side-title').innerText = cfg.brandName || "JFS Laundry AI";
-    document.getElementById('info-location').innerText = cfg.location || "Sidosermo, Wonocolo";
-    document.getElementById('info-phone').innerText = cfg.whatsappAdmin || "0822-3001-0172";
-    
-    if(cfg.pricing) {
-      document.getElementById('price-kering').innerText = `Rp ${cfg.pricing.kering.toLocaleString('id-ID')}/kg`;
-      document.getElementById('price-setrika').innerText = `Rp ${cfg.pricing.setrika.toLocaleString('id-ID')}/kg`;
-      document.getElementById('price-express').innerText = `Rp ${cfg.pricing.express.toLocaleString('id-ID')}/kg`;
+    // Inject Tenant Data ke UI
+    document.getElementById('header-brand').innerText = cfg.name;
+    document.getElementById('header-logo').src = cfg.logo || "logo-jfs.png";
+    document.getElementById('chat-title').innerText = cfg.name;
+    document.getElementById('msg-brand').innerText = cfg.name;
+    document.getElementById('side-title').innerText = cfg.name;
+    document.getElementById('info-location').innerText = cfg.address;
+    document.getElementById('info-phone').innerText = cfg.waNumber;
+
+    if (cfg.pricelist) {
+      document.getElementById('price-kiloan').innerText = `Rp ${(cfg.pricelist.kiloan || 0).toLocaleString('id-ID')}/kg`;
+      document.getElementById('price-setrika').innerText = `Rp ${(cfg.pricelist.setrika || 0).toLocaleString('id-ID')}/kg`;
+      document.getElementById('price-express').innerText = `Rp ${(cfg.pricelist.express || 0).toLocaleString('id-ID')}/kg`;
     }
 
     function sendPreset(text) {
@@ -144,6 +136,7 @@
       handleSend(new Event('submit'));
     }
 
+    // Dynamic System Prompt Engine (AI Response Simulation)
     function handleSend(e) {
       e.preventDefault();
       const input = document.getElementById('user-input');
@@ -152,22 +145,25 @@
 
       const chatBox = document.getElementById('chat-box');
       
-      // User Message
+      // Render pesan user
       chatBox.innerHTML += `<div class="flex justify-end"><div class="bg-blue-600 text-white p-3 rounded-2xl max-w-[80%] rounded-tr-none">${val}</div></div>`;
       input.value = '';
       chatBox.scrollTop = chatBox.scrollHeight;
 
-      // Bot Response Simulation
+      // Simulasi jawaban AI berbasis context tenant yang aktif
       setTimeout(() => {
-        let reply = "Terima kasih! Ada yang bisa AI bantu lagi untuk laundry Anda?";
+        let reply = `Terima kasih! Ada yang bisa AI bantu lagi seputar layanan di **${cfg.name}**?`;
         const lower = val.toLowerCase();
 
-        if (lower.includes('harga')) {
-          reply = `Daftar Tarif ${cfg.brandName}:<br>• Cuci Kering: Rp ${cfg.pricing.kering}/kg<br>• Cuci Setrika: Rp ${cfg.pricing.setrika}/kg<br>• Express: Rp ${cfg.pricing.express}/kg`;
-        } else if (lower.includes('order') || lower.includes('5 kg') || lower.includes('pickup')) {
-          reply = `Pesanan untuk 5 kg siap diproses! Silakan klik tombol **Chat WhatsApp Admin** di sebelah kanan untuk langsung menjadwalkan penjemputan.`;
+        if (lower.includes('harga') || lower.includes('tarif') || lower.includes('biaya')) {
+          reply = `Daftar Tarif Resmi **${cfg.name}**:<br>` +
+                  `• Cuci Kiloan: Rp ${(cfg.pricelist.kiloan || 0).toLocaleString('id-ID')}/kg<br>` +
+                  `• Cuci Setrika: Rp ${(cfg.pricelist.setrika || 0).toLocaleString('id-ID')}/kg<br>` +
+                  `• Express: Rp ${(cfg.pricelist.express || 0).toLocaleString('id-ID')}/kg`;
+        } else if (lower.includes('order') || lower.includes('kg') || lower.includes('pickup') || lower.includes('jemput')) {
+          reply = `Layanan antar-jemput **${cfg.name}** siap melayani area **${cfg.address}**. Silakan klik tombol **Chat WhatsApp Admin** untuk langsung terhubung dengan admin kami.`;
         } else if (lower.includes('status')) {
-          reply = `Status pesanan terakhir <b>ORD-DEMO-001</b>: Menunggu pickup oleh kurir JFS.`;
+          reply = `Sistem tracking untuk **${cfg.name}** sedang memverifikasi pesanan Anda. Silakan konfirmasi via WA ke ${cfg.waNumber}.`;
         }
 
         chatBox.innerHTML += `<div class="flex justify-start"><div class="bg-slate-100 border border-slate-200 p-3 rounded-2xl max-w-[80%] rounded-tl-none">${reply}</div></div>`;
@@ -176,8 +172,8 @@
     }
 
     function openWA() {
-      const waNum = cfg.whatsappAdmin || "6282230010172";
-      window.open(`https://wa.me/${waNum}?text=Halo%20Admin%20${encodeURIComponent(cfg.brandName)},%20saya%20mau%20tanya%20layanan%20laundry`, '_blank');
+      const waNum = cfg.waNumber || "6282230010172";
+      window.open(`https://wa.me/${waNum}?text=Halo%20Admin%20${encodeURIComponent(cfg.name)},%20saya%20mau%20tanya%20layanan%20laundry`, '_blank');
     }
   </script>
 </body>
