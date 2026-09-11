@@ -3,82 +3,179 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JFS Laundry AI — Smart Assistant</title>
+  <title>JFS Laundry AI — Smart Assistant Demo</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="config.js"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
+<body class="bg-slate-100 text-slate-800 min-h-screen font-sans p-4 md:p-6">
 
-  <div class="max-w-md w-full bg-slate-800 rounded-2xl p-6 shadow-xl border border-slate-700">
-    <!-- Header -->
-    <div class="text-center mb-6">
-      <h1 class="text-2xl font-bold text-emerald-400" id="brand-title">JFS Laundry AI</h1>
-      <p class="text-xs text-slate-400 mt-1" id="company-sub">Powered by JFS AI Technology</p>
-    </div>
-
-    <!-- Quick Presets -->
-    <div class="mb-4 flex flex-wrap gap-2 justify-center">
-      <button onclick="quickSelect(6, 'kering')" class="bg-slate-700 hover:bg-slate-600 text-xs py-2 px-3 rounded-lg text-slate-200 border border-slate-600">🧮 6 kg Kiloan</button>
-      <button onclick="quickSelect(3, 'express')" class="bg-slate-700 hover:bg-slate-600 text-xs py-2 px-3 rounded-lg text-slate-200 border border-slate-600">⚡ 3 kg Express</button>
-      <button onclick="quickSelect(1, 'bedcover')" class="bg-slate-700 hover:bg-slate-600 text-xs py-2 px-3 rounded-lg text-slate-200 border border-slate-600">🛌 1 Bedcover</button>
-    </div>
-
-    <!-- Estimator Output -->
-    <div class="bg-slate-900 p-4 rounded-xl mb-6 border border-slate-800 text-sm">
-      <div class="flex justify-between mb-2">
-        <span class="text-slate-400">Layanan:</span>
-        <span id="summary-service" class="font-semibold text-slate-200">-</span>
-      </div>
-      <div class="flex justify-between mb-2">
-        <span class="text-slate-400">Estimasi Ongkir:</span>
-        <span id="summary-shipping" class="font-semibold text-slate-200">-</span>
-      </div>
-      <hr class="border-slate-800 my-2">
-      <div class="flex justify-between text-base font-bold">
-        <span>Total Estimated:</span>
-        <span id="summary-total" class="text-emerald-400">Rp 0</span>
+  <!-- Top Navbar -->
+  <header class="max-w-6xl mx-auto bg-white rounded-xl p-4 shadow-sm mb-4 flex justify-between items-center border border-slate-200">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">🧺</div>
+      <div>
+        <h1 class="font-bold text-lg leading-tight" id="header-brand">JFS Laundry</h1>
+        <p class="text-xs text-slate-500">AI Admin Demo • Laundry Express Gratis Antar Jemput</p>
       </div>
     </div>
+    <span class="bg-emerald-100 text-emerald-700 text-xs font-semibold px-3 py-1 rounded-full border border-emerald-200">● Demo AI</span>
+  </header>
 
-    <!-- WA Button CTA -->
-    <button onclick="sendOrderWA()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2">
-      <span>📲 Lanjut Order via WhatsApp</span>
-    </button>
-  </div>
+  <!-- Main Container -->
+  <main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- LEFT: Chat Simulator (2 Cols) -->
+    <section class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[600px]">
+      <div class="bg-blue-50/50 p-3 px-4 border-b border-slate-100 text-xs text-blue-600 font-medium">
+        Simulasi pelanggan — coba tanyakan harga, pickup, order, atau status.
+      </div>
 
+      <!-- Chat Header -->
+      <div class="p-4 border-b border-slate-100 flex items-center gap-3">
+        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-lg">🤖</div>
+        <div>
+          <h2 class="font-bold text-slate-800 text-sm" id="chat-title">JFS Laundry AI</h2>
+          <p class="text-xs text-emerald-600 font-medium">● Siap membantu</p>
+        </div>
+      </div>
+
+      <!-- Chat Box Messages -->
+      <div id="chat-box" class="flex-1 p-4 overflow-y-auto space-y-3 text-sm">
+        <div class="bg-slate-100 p-3 rounded-2xl max-w-[80%] rounded-tl-none border border-slate-200">
+          Halo Kak 👋 Selamat datang di <span class="font-semibold" id="msg-brand">JFS Laundry</span>.<br><br>
+          Saya AI Admin yang dapat membantu informasi layanan, harga, order, dan antar-jemput.<br><br>
+          Silakan coba chat seperti pelanggan biasa 😊
+        </div>
+      </div>
+
+      <!-- Quick Preset Prompts -->
+      <div class="p-3 border-t border-slate-100 bg-slate-50 flex gap-2 overflow-x-auto text-xs">
+        <button onclick="sendPreset('💰 Harga')" class="bg-white border border-slate-200 hover:bg-slate-100 px-3 py-1.5 rounded-full whitespace-nowrap shadow-sm">💰 Harga</button>
+        <button onclick="sendPreset('📦 Order 5 kg')" class="bg-white border border-slate-200 hover:bg-slate-100 px-3 py-1.5 rounded-full whitespace-nowrap shadow-sm">📦 Order 5 kg</button>
+        <button onclick="sendPreset('🚚 Pickup')" class="bg-white border border-slate-200 hover:bg-slate-100 px-3 py-1.5 rounded-full whitespace-nowrap shadow-sm">🚚 Pickup</button>
+        <button onclick="sendPreset('🔎 Status')" class="bg-white border border-slate-200 hover:bg-slate-100 px-3 py-1.5 rounded-full whitespace-nowrap shadow-sm">🔎 Status</button>
+      </div>
+
+      <!-- Chat Input Form -->
+      <form onsubmit="handleSend(event)" class="p-3 border-t border-slate-200 flex gap-2">
+        <input id="user-input" type="text" placeholder="Contoh: kak, bisa jemput laundry 5 kg?" class="flex-1 border border-slate-300 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-blue-500">
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-xl text-sm transition">Kirim</button>
+      </form>
+    </section>
+
+    <!-- RIGHT: Business Info Sidebar (1 Col) -->
+    <section class="space-y-4">
+      <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <div>
+          <h3 class="font-bold text-slate-800 text-base" id="side-title">JFS Laundry AI</h3>
+          <p class="text-xs text-slate-500">Contoh bagaimana AI dapat menjadi admin digital JFS.</p>
+        </div>
+
+        <div class="space-y-2 text-xs border-t border-slate-100 pt-3">
+          <h4 class="font-bold text-slate-700 uppercase tracking-wider text-[10px]">Informasi Bisnis</h4>
+          <div class="flex justify-between"><span class="text-slate-500">Lokasi</span><span class="font-semibold text-slate-700" id="info-location">Sidosermo, Wonocolo</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Rating</span><span class="font-semibold text-slate-700">⭐ 4.9</span></div>
+          <div class="flex justify-between"><span class="text-slate-500">Telepon</span><span class="font-semibold text-slate-700" id="info-phone">0822-3001-0172</span></div>
+        </div>
+
+        <div class="space-y-2 text-xs border-t border-slate-100 pt-3">
+          <h4 class="font-bold text-slate-700 uppercase tracking-wider text-[10px]">Contoh Layanan</h4>
+          <div class="flex justify-between"><span class="text-slate-600">Cuci Kering</span><span class="font-semibold text-slate-800" id="price-kering">Rp 6.000/kg</span></div>
+          <div class="flex justify-between"><span class="text-slate-600">Cuci Setrika</span><span class="font-semibold text-slate-800" id="price-setrika">Rp 8.000/kg</span></div>
+          <div class="flex justify-between"><span class="text-slate-600">Express</span><span class="font-semibold text-slate-800" id="price-express">Rp 15.000/kg</span></div>
+          <div class="flex justify-between items-center"><span class="text-slate-600">Antar-Jemput</span><span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded">TERSEDIA</span></div>
+        </div>
+
+        <!-- Order Demo Box -->
+        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs space-y-1">
+          <p class="font-bold text-slate-700">Contoh order AI</p>
+          <div class="text-[11px] text-slate-600">
+            <p><strong>ORD-DEMO-001</strong></p>
+            <p>Customer: Andi</p>
+            <p>Estimasi: 5 kg</p>
+            <p class="mt-1">Status: <span class="bg-blue-200 text-blue-800 px-1.5 py-0.5 rounded text-[10px] font-bold">Menunggu pickup</span></p>
+          </div>
+        </div>
+
+        <!-- WA Action Box -->
+        <div class="bg-blue-50/60 p-4 rounded-xl border border-blue-100 space-y-3">
+          <p class="text-xs font-bold text-slate-800">🚀 Mau pesan laundry?</p>
+          <p class="text-[11px] text-slate-500">Versi produksi dapat diarahkan langsung ke WhatsApp Admin.</p>
+          <button onclick="openWA()" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2">
+            <span>Chat WhatsApp Admin</span>
+          </button>
+        </div>
+
+        <p class="text-[10px] text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-200 leading-tight">
+          Prototype demo. Harga/status perlu dikonfirmasi sebelum digunakan sebagai sistem produksi.
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Script Logic Sync with config.js -->
   <script>
-    // System script fallback jika config.js gagal dimuat
-    const config = typeof APP_CONFIG !== 'undefined' ? APP_CONFIG : {
+    const cfg = typeof APP_CONFIG !== 'undefined' ? APP_CONFIG : {
       brandName: "JFS Laundry AI",
       whatsappAdmin: "6282230010172",
-      pricing: { kering: 6000, express: 15000, bedcover: 35000 },
-      shipping: { minKgFree: 5, flatRate: 5000 }
+      location: "Sidosermo, Wonocolo",
+      pricing: { kering: 6000, setrika: 8000, express: 15000 }
     };
 
-    let currentOrder = { qty: 0, type: '', total: 0, shippingCost: 0 };
-
-    function quickSelect(qty, type) {
-      const rate = config.pricing[type] || 6000;
-      const subtotal = qty * rate;
-      
-      // Hitung ongkir berdasarkan minKgFree
-      const shippingCost = (type !== 'bedcover' && qty >= config.shipping.minKgFree) ? 0 : config.shipping.flatRate;
-      const total = subtotal + shippingCost;
-
-      currentOrder = { qty, type, total, shippingCost };
-
-      document.getElementById('summary-service').innerText = `${qty} ${type === 'bedcover' ? 'pcs' : 'kg'} (${type.toUpperCase()})`;
-      document.getElementById('summary-shipping').innerText = shippingCost === 0 ? "GRATIS" : `Rp ${shippingCost.toLocaleString('id-ID')}`;
-      document.getElementById('summary-total').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+    // Auto Fill Data from config.js
+    document.getElementById('header-brand').innerText = cfg.brandName || "JFS Laundry";
+    document.getElementById('chat-title').innerText = cfg.brandName || "JFS Laundry AI";
+    document.getElementById('msg-brand').innerText = cfg.brandName || "JFS Laundry";
+    document.getElementById('side-title').innerText = cfg.brandName || "JFS Laundry AI";
+    document.getElementById('info-location').innerText = cfg.location || "Sidosermo, Wonocolo";
+    document.getElementById('info-phone').innerText = cfg.whatsappAdmin || "0822-3001-0172";
+    
+    if(cfg.pricing) {
+      document.getElementById('price-kering').innerText = `Rp ${cfg.pricing.kering.toLocaleString('id-ID')}/kg`;
+      document.getElementById('price-setrika').innerText = `Rp ${cfg.pricing.setrika.toLocaleString('id-ID')}/kg`;
+      document.getElementById('price-express').innerText = `Rp ${cfg.pricing.express.toLocaleString('id-ID')}/kg`;
     }
 
-    function sendOrderWA() {
-      if (!currentOrder.total) {
-        alert("Pilih paket simulasi terlebih dahulu!");
-        return;
-      }
-      const text = `Halo Admin ${config.brandName}, saya mau order laundry:%0A- Layanan: ${currentOrder.qty} (${currentOrder.type})%0A- Total Estimasi: Rp ${currentOrder.total.toLocaleString('id-ID')}%0A%0AMohon diproses ya!`;
-      window.open(`https://wa.me/${config.whatsappAdmin}?text=${text}`, '_blank');
+    function sendPreset(text) {
+      document.getElementById('user-input').value = text;
+      handleSend(new Event('submit'));
+    }
+
+    function handleSend(e) {
+      e.preventDefault();
+      const input = document.getElementById('user-input');
+      const val = input.value.trim();
+      if (!val) return;
+
+      const chatBox = document.getElementById('chat-box');
+      
+      // User Message
+      chatBox.innerHTML += `<div class="flex justify-end"><div class="bg-blue-600 text-white p-3 rounded-2xl max-w-[80%] rounded-tr-none">${val}</div></div>`;
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      // Bot Response Simulation
+      setTimeout(() => {
+        let reply = "Terima kasih! Ada yang bisa AI bantu lagi untuk laundry Anda?";
+        const lower = val.toLowerCase();
+
+        if (lower.includes('harga')) {
+          reply = `Daftar Tarif ${cfg.brandName}:<br>• Cuci Kering: Rp ${cfg.pricing.kering}/kg<br>• Cuci Setrika: Rp ${cfg.pricing.setrika}/kg<br>• Express: Rp ${cfg.pricing.express}/kg`;
+        } else if (lower.includes('order') || lower.includes('5 kg') || lower.includes('pickup')) {
+          reply = `Pesanan untuk 5 kg siap diproses! Silakan klik tombol **Chat WhatsApp Admin** di sebelah kanan untuk langsung menjadwalkan penjemputan.`;
+        } else if (lower.includes('status')) {
+          reply = `Status pesanan terakhir <b>ORD-DEMO-001</b>: Menunggu pickup oleh kurir JFS.`;
+        }
+
+        chatBox.innerHTML += `<div class="flex justify-start"><div class="bg-slate-100 border border-slate-200 p-3 rounded-2xl max-w-[80%] rounded-tl-none">${reply}</div></div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }, 600);
+    }
+
+    function openWA() {
+      const waNum = cfg.whatsappAdmin || "6282230010172";
+      window.open(`https://wa.me/${waNum}?text=Halo%20Admin%20${encodeURIComponent(cfg.brandName)},%20saya%20mau%20tanya%20layanan%20laundry`, '_blank');
     }
   </script>
 </body>
