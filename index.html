@@ -178,7 +178,74 @@
     }
 
     // Simulasi Chatbot AI sederhananya
-    function sendMessage() {
+    function function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const chatBox = document.getElementById('chat-box');
+
+      // 1. Tampilkan pesan user
+      const userBubble = document.createElement('div');
+      userBubble.className = "bg-blue-600 text-white p-2 rounded-lg max-w-[85%] ml-auto text-[11px]";
+      userBubble.innerText = text;
+      chatBox.appendChild(userBubble);
+
+      input.value = '';
+
+      // 2. Logika Pemrosesan AI
+      setTimeout(() => {
+        const aiBubble = document.createElement('div');
+        aiBubble.className = "bg-slate-700/60 text-slate-200 p-2 rounded-lg max-w-[85%] text-[11px]";
+        
+        const config = activeConfig || {};
+        const pricelist = config.pricelist || {};
+        const lowerText = text.toLowerCase();
+        
+        let responseText = "";
+
+        // Ekstrak Angka dari Pesan (contoh: "4 kg" -> 4)
+        const extractedNumbers = lowerText.match(/\d+/g);
+        const qty = extractedNumbers ? parseInt(extractedNumbers[0]) : null;
+
+        // Cari Jenis Layanan yang Cocok di Pricelist
+        let matchedKey = null;
+        Object.keys(pricelist).forEach(key => {
+          if (lowerText.includes(key.toLowerCase())) {
+            matchedKey = key;
+          }
+        });
+
+        // KASUS A: Ada Jenis Layanan & Ada Angka Berat/Jumlah (Contoh: "express 4 kg")
+        if (matchedKey && qty) {
+          const unitPrice = pricelist[matchedKey];
+          const totalPrice = unitPrice * qty;
+          responseText = `Untuk layanan *${matchedKey.toUpperCase()}* sebanyak *${qty} Kg/Pcs*, total estimasinya adalah *Rp ${totalPrice.toLocaleString('id-ID')}* (Rp ${unitPrice.toLocaleString('id-ID')}/unit). Silakan isi form penjemputan di atas ya! 🧺`;
+        } 
+        // KASUS B: Ada Jenis Layanan Saja (Contoh: "express berapa?")
+        else if (matchedKey) {
+          const unitPrice = pricelist[matchedKey];
+          responseText = `Tarif layanan *${matchedKey.toUpperCase()}* di ${config.name} adalah *Rp ${unitPrice.toLocaleString('id-ID')}* per Kg/Pcs. Berapa Kg yang mau dicuci?`;
+        }
+        // KASUS C: Menanyakan Harga Secara Umum (Contoh: "berapa harganya?", "daftar tarif")
+        else if (lowerText.includes('harga') || lowerText.includes('tarif') || lowerText.includes('berapa')) {
+          const listStr = Object.entries(pricelist).map(([k, v]) => `${k.toUpperCase()}: Rp ${v.toLocaleString('id-ID')}`).join(', ');
+          responseText = `Berikut daftar tarif di ${config.name}:\n${listStr}.`;
+        }
+        // KASUS D: Menanyakan Lokasi / Jam Operasional
+        else if (lowerText.includes('alamat') || lowerText.includes('lokasi') || lowerText.includes('mana')) {
+          responseText = `${config.name} berlokasi di: ${config.address}. Kamu bisa pesan antar-jemput langsung lewat form di atas!`;
+        }
+        // KASUS E: Pertanyaan Umum
+        else {
+          responseText = `Halo! Di ${config.name}, kamu bisa cek daftar harga di atas atau pesan layanan antar-jemput secara langsung via formulir. Ada yang ingin ditanyakan lagi?`;
+        }
+
+        aiBubble.innerText = responseText;
+        chatBox.appendChild(aiBubble);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }, 400);
+    }() {
       const input = document.getElementById('chat-input');
       const text = input.value.trim();
       if (!text) return;
