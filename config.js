@@ -1,4 +1,4 @@
-// config.js — Master Config & Multi-Tenant Parser Auto-Init
+// config.js — Master Config & Multi-Tenant Reader
 
 const TENANTS_DATA = {
   "default": {
@@ -39,20 +39,35 @@ const TENANTS_DATA = {
   }
 };
 
-// URL Query Parameter Parser
-const urlParams = new URLSearchParams(window.location.search);
-const activeTenantId = urlParams.get('id') || 'default';
+// Ambil ID tenant dari URL query parameter
+function getActiveTenantData() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const activeTenantId = urlParams.get('id') || 'default';
 
-// Prioritaskan data LocalStorage editan Admin, jika kosong ambil master/default
-const customStorageData = localStorage.getItem(`tenant_cfg_${activeTenantId}`);
+  // 1. Cek apakah ada data editan dari Admin di LocalStorage
+  const savedData = localStorage.getItem(`tenant_cfg_${activeTenantId}`);
+  if (savedData) {
+    try {
+      return JSON.parse(savedData);
+    } catch (e) {
+      console.error("Gagal parse localstorage:", e);
+    }
+  }
 
-const APP_CONFIG = customStorageData 
-  ? JSON.parse(customStorageData) 
-  : (TENANTS_DATA[activeTenantId] || {
-      name: `Laundry ${activeTenantId.toUpperCase()}`,
-      company: "JFS AI Partner",
-      logo: "logo-jfs.png",
-      waNumber: "6282230010172",
-      address: "Surabaya",
-      pricelist: { kiloan: 7000, setrika: 9000, express: 15000 }
-    });
+  // 2. Jika tidak ada di LocalStorage, ambil dari master data bawaan
+  if (TENANTS_DATA[activeTenantId]) {
+    return TENANTS_DATA[activeTenantId];
+  }
+
+  // 3. Fallback untuk tenant baru yang belum ada di master data
+  return {
+    name: `Laundry ${activeTenantId.replace(/-/g, ' ').toUpperCase()}`,
+    company: "JFS AI Partner",
+    logo: "logo-jfs.png",
+    waNumber: "6282230010172",
+    address: "Surabaya",
+    pricelist: { kiloan: 7000, setrika: 9000, express: 15000 }
+  };
+}
+
+const APP_CONFIG = getActiveTenantData();
