@@ -119,7 +119,7 @@
   </main>
 
   <script>
-    // Master data cadangan internal jika config external gagal
+    // Master data cadangan internal
     const DEFAULT_DATA = {
       "default": { name: "JFS Laundry AI Demo", waNumber: "6282230010172", address: "Sidosermo, Wonocolo", pricelist: { kiloan: 6000, setrika: 8000, express: 15000 } },
       "sumber-rejeki": { name: "Laundry Sumber Rejeki", waNumber: "6281234567890", address: "Jl. Raya Tunjungan No. 12", pricelist: { kiloan: 8000, setrika: 10000, express: 18000 } },
@@ -133,17 +133,6 @@
     function initAdmin() {
       const urlParams = new URLSearchParams(window.location.search);
       currentTenantKey = urlParams.get('id') || 'default';
-
-      // Pastikan dropdown sesuai tenant ID
-      const selectElem = document.getElementById('tenant-select');
-      if (selectElem) selectElem.value = currentTenantKey;
-
-      // Buat URL Customer
-      const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
-      fullCustomerUrl = `${baseUrl}?id=${currentTenantKey}`;
-      
-      document.getElementById('customer-url-display').value = fullCustomerUrl;
-      document.getElementById('btn-preview-customer').href = fullCustomerUrl;
 
       // Load Data dari LocalStorage atau Master Cadangan
       const savedData = localStorage.getItem(`tenant_cfg_${currentTenantKey}`);
@@ -161,6 +150,32 @@
           pricelist: { kiloan: 7000, express: 15000 }
         };
       }
+
+      // OTOMATIS TAMBAHKAN TENANT BARU KE DROPDOWN JIKA BELUM ADA
+      const selectElem = document.getElementById('tenant-select');
+      if (selectElem) {
+        let optionExists = false;
+        for (let i = 0; i < selectElem.options.length; i++) {
+          if (selectElem.options[i].value === currentTenantKey) {
+            optionExists = true;
+            break;
+          }
+        }
+        if (!optionExists) {
+          const newOpt = document.createElement('option');
+          newOpt.value = currentTenantKey;
+          newOpt.innerText = currentConfigData.name || currentTenantKey;
+          selectElem.appendChild(newOpt);
+        }
+        selectElem.value = currentTenantKey;
+      }
+
+      // Buat URL Customer
+      const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
+      fullCustomerUrl = `${baseUrl}?id=${currentTenantKey}`;
+      
+      document.getElementById('customer-url-display').value = fullCustomerUrl;
+      document.getElementById('btn-preview-customer').href = fullCustomerUrl;
 
       // Isi nilai Form
       document.getElementById('input-name').value = currentConfigData.name || '';
@@ -259,6 +274,12 @@
       currentConfigData.pricelist = updatedPricelist;
       localStorage.setItem(`tenant_cfg_${currentTenantKey}`, JSON.stringify(currentConfigData));
 
+      // Otomatis perbarui opsi teks di dropdown jika nama toko diubah
+      const selectElem = document.getElementById('tenant-select');
+      if (selectElem && selectElem.selectedOptions[0]) {
+        selectElem.selectedOptions[0].innerText = currentConfigData.name;
+      }
+
       alert(`✅ Pengaturan Toko '${currentConfigData.name}' Berhasil Disimpan!`);
     }
 
@@ -269,7 +290,6 @@
       }
     }
 
-    // Jalankan saat halaman dibuka
     window.addEventListener('DOMContentLoaded', initAdmin);
   </script>
 </body>
