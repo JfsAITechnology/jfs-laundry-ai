@@ -105,64 +105,96 @@
     </div>
   </main>
 
-  <script>
+ <script>
     let activeConfig = {};
 
-    function loadTenantPortal() {
-      // Ambil data tenant aktif dari config.js atau localStorage
-      activeConfig = (typeof APP_CONFIG !== 'undefined') ? APP_CONFIG : (typeof getActiveTenantData === 'function' ? getActiveTenantData() : {});
+    // Fungsi membaca tenant langsung di index.html agar tidak bergantung config.js
+    function getTenantConfig() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tenantId = urlParams.get('id') || 'default';
 
-      // Tampilkan Profil Toko
-      document.getElementById('display-store-name').innerText = activeConfig.name || "JFS Laundry AI";
-      document.getElementById('display-store-address').innerText = activeConfig.address || "Surabaya";
-      
-      const waNum = activeConfig.waNumber || "6282230010172";
-      document.getElementById('btn-wa-direct').href = `https://wa.me/${waNum}?text=Halo%20${encodeURIComponent(activeConfig.name)},%20saya%20ingin%20bertanya.`;
-
-      // Render Pricelist
-      const container = document.getElementById('pricelist-container');
-      const selectService = document.getElementById('order-service');
-      
-      container.innerHTML = '';
-      selectService.innerHTML = '';
-
-      const pricelist = activeConfig.pricelist || {};
-      const keys = Object.keys(pricelist);
-
-      if (keys.length === 0) {
-        container.innerHTML = `<p class="col-span-2 text-slate-500 italic">Daftar harga belum diatur oleh admin.</p>`;
-        selectService.innerHTML = `<option value="Layanan Umum">Layanan Umum</option>`;
-        return;
+      // 1. Cek LocalStorage dari Admin
+      const saved = localStorage.getItem(`tenant_cfg_${tenantId}`);
+      if (saved) {
+        try { return JSON.parse(saved); } catch(e) {}
       }
 
-      keys.forEach(key => {
-        // Isi Grid Harga
-        const item = document.createElement('div');
-        item.className = "bg-slate-900/80 border border-slate-700/50 p-2 rounded-lg flex justify-between items-center";
-        item.innerHTML = `
-          <span class="font-medium text-slate-300 capitalize">${key}</span>
-          <span class="font-bold text-emerald-400">Rp ${Number(pricelist[key]).toLocaleString('id-ID')}</span>
-        `;
-        container.appendChild(item);
+      // 2. Data Cadangan (Fallback)
+      const defaults = {
+        "sumber-rejeki": { name: "Laundry Sumber Rejeki", address: "Jl. Tunjungan No. 12", waNumber: "6281234567890", pricelist: { kiloan: 8000, express: 18000 } },
+        "clean-express": { name: "Clean Express Laundry", address: "Jl. Gubeng No. 45", waNumber: "6289876543210", pricelist: { kiloan: 7000, express: 16000 } }
+      };
 
-        // Isi Dropdown Pilihan Layanan di Form Penjemputan
-        const opt = document.createElement('option');
-        opt.value = key.toUpperCase();
-        opt.innerText = `${key.toUpperCase()} (Rp ${Number(pricelist[key]).toLocaleString('id-ID')})`;
-        selectService.appendChild(opt);
-      });
+      if (defaults[tenantId]) return defaults[tenantId];
+
+      // 3. Jika tenant baru belum ada di localstorage/defaults
+      const cleanName = tenantId.replace(/-/g, ' ').toUpperCase();
+      return {
+        name: `LAUNDRY ${cleanName}`,
+        address: "Surabaya",
+        waNumber: "6282230010172",
+        pricelist: { kiloan: 7000, setrika: 9000, express: 15000 }
+      };
     }
 
-    // Fungsi Kirim Order Penjemputan ke WA Toko
+    function loadTenantPortal() {
+      try {
+        // Ambil data tenant
+        activeConfig = getTenantConfig();
+
+        // Tampilkan Profil Toko
+        document.getElementById('display-store-name').innerText = activeConfig.name || "JFS Laundry AI";
+        document.getElementById('display-store-address').innerText = activeConfig.address || "Surabaya";
+        
+        const waNum = activeConfig.waNumber || "6282230010172";
+        document.getElementById('btn-wa-direct').href = `https://wa.me/${waNum}?text=Halo%20${encodeURIComponent(activeConfig.name)},%20saya%20ingin%20bertanya.`;
+
+        // Render Pricelist
+        const container = document.getElementById('pricelist-container');
+        const selectService = document.getElementById('order-service');
+        
+        container.innerHTML = '';
+        selectService.innerHTML = '';
+
+        const pricelist = activeConfig.pricelist || {};
+        const keys = Object.keys(pricelist);
+
+        if (keys.length === 0) {
+          container.innerHTML = `<p class="col-span-2 text-slate-500 italic">Daftar harga belum diatur oleh admin.</p>`;
+          selectService.innerHTML = `<option value="Layanan Umum">Layanan Umum</option>`;
+          return;
+        }
+
+        keys.forEach(key => {
+          // Isi Grid Harga
+          const item = document.createElement('div');
+          item.className = "bg-slate-900/80 border border-slate-700/50 p-2 rounded-lg flex justify-between items-center";
+          item.innerHTML = `
+            <span class="font-medium text-slate-300 capitalize">${key}</span>
+            <span class="font-bold text-emerald-400">Rp ${Number(pricelist[key]).toLocaleString('id-ID')}</span>
+          `;
+          container.appendChild(item);
+
+          // Isi Dropdown Pilihan Layanan
+          const opt = document.createElement('option');
+          opt.value = key.toUpperCase();
+          opt.innerText = `${key.toUpperCase()} (Rp ${Number(pricelist[key]).toLocaleString('id-ID')})`;
+          selectService.appendChild(opt);
+        });
+      } catch (err) {
+        console.error("Error loading portal:", err);
+        document.getElementById('display-store-name').innerText = "JFS Laundry AI";
+        document.getElementById('display-store-address').innerText = "Surabaya";
+      }
+    }
+
     function sendPickupOrder(e) {
       e.preventDefault();
-
       const name = document.getElementById('order-name').value.trim();
       const service = document.getElementById('order-service').value;
       const qty = document.getElementById('order-qty').value.trim();
       const address = document.getElementById('order-address').value.trim();
       const notes = document.getElementById('order-notes').value.trim() || '-';
-
       const waNum = activeConfig.waNumber || "6282230010172";
 
       const message = `*MINTA PENJEMPUTAN CUCIAN - ${activeConfig.name.toUpperCase()}*%0A%0A` +
@@ -173,19 +205,15 @@
         `📝 *Catatan*: ${encodeURIComponent(notes)}%0A%0A` +
         `Mohon segera diproses dan dijemput ya Admin. Terima kasih!`;
 
-      // Buka WA Langsung
       window.open(`https://wa.me/${waNum}?text=${message}`, '_blank');
     }
 
-    // Simulasi Chatbot AI sederhananya
-    function function sendMessage() {
+    function sendMessage() {
       const input = document.getElementById('chat-input');
       const text = input.value.trim();
       if (!text) return;
 
       const chatBox = document.getElementById('chat-box');
-
-      // 1. Tampilkan pesan user
       const userBubble = document.createElement('div');
       userBubble.className = "bg-blue-600 text-white p-2 rounded-lg max-w-[85%] ml-auto text-[11px]";
       userBubble.innerText = text;
@@ -193,7 +221,6 @@
 
       input.value = '';
 
-      // 2. Logika Pemrosesan AI
       setTimeout(() => {
         const aiBubble = document.createElement('div');
         aiBubble.className = "bg-slate-700/60 text-slate-200 p-2 rounded-lg max-w-[85%] text-[11px]";
@@ -202,43 +229,26 @@
         const pricelist = config.pricelist || {};
         const lowerText = text.toLowerCase();
         
-        let responseText = "";
-
-        // Ekstrak Angka dari Pesan (contoh: "4 kg" -> 4)
         const extractedNumbers = lowerText.match(/\d+/g);
         const qty = extractedNumbers ? parseInt(extractedNumbers[0]) : null;
 
-        // Cari Jenis Layanan yang Cocok di Pricelist
         let matchedKey = null;
         Object.keys(pricelist).forEach(key => {
-          if (lowerText.includes(key.toLowerCase())) {
-            matchedKey = key;
-          }
+          if (lowerText.includes(key.toLowerCase())) matchedKey = key;
         });
 
-        // KASUS A: Ada Jenis Layanan & Ada Angka Berat/Jumlah (Contoh: "express 4 kg")
+        let responseText = "";
         if (matchedKey && qty) {
           const unitPrice = pricelist[matchedKey];
           const totalPrice = unitPrice * qty;
           responseText = `Untuk layanan *${matchedKey.toUpperCase()}* sebanyak *${qty} Kg/Pcs*, total estimasinya adalah *Rp ${totalPrice.toLocaleString('id-ID')}* (Rp ${unitPrice.toLocaleString('id-ID')}/unit). Silakan isi form penjemputan di atas ya! 🧺`;
-        } 
-        // KASUS B: Ada Jenis Layanan Saja (Contoh: "express berapa?")
-        else if (matchedKey) {
-          const unitPrice = pricelist[matchedKey];
-          responseText = `Tarif layanan *${matchedKey.toUpperCase()}* di ${config.name} adalah *Rp ${unitPrice.toLocaleString('id-ID')}* per Kg/Pcs. Berapa Kg yang mau dicuci?`;
-        }
-        // KASUS C: Menanyakan Harga Secara Umum (Contoh: "berapa harganya?", "daftar tarif")
-        else if (lowerText.includes('harga') || lowerText.includes('tarif') || lowerText.includes('berapa')) {
+        } else if (matchedKey) {
+          responseText = `Tarif layanan *${matchedKey.toUpperCase()}* di ${config.name} adalah *Rp ${pricelist[matchedKey].toLocaleString('id-ID')}* per Kg/Pcs. Berapa Kg yang mau dicuci?`;
+        } else if (lowerText.includes('harga') || lowerText.includes('tarif') || lowerText.includes('berapa')) {
           const listStr = Object.entries(pricelist).map(([k, v]) => `${k.toUpperCase()}: Rp ${v.toLocaleString('id-ID')}`).join(', ');
           responseText = `Berikut daftar tarif di ${config.name}:\n${listStr}.`;
-        }
-        // KASUS D: Menanyakan Lokasi / Jam Operasional
-        else if (lowerText.includes('alamat') || lowerText.includes('lokasi') || lowerText.includes('mana')) {
-          responseText = `${config.name} berlokasi di: ${config.address}. Kamu bisa pesan antar-jemput langsung lewat form di atas!`;
-        }
-        // KASUS E: Pertanyaan Umum
-        else {
-          responseText = `Halo! Di ${config.name}, kamu bisa cek daftar harga di atas atau pesan layanan antar-jemput secara langsung via formulir. Ada yang ingin ditanyakan lagi?`;
+        } else {
+          responseText = `Halo! Di ${config.name}, Anda bisa cek daftar harga di atas atau pesan penjemputan via formulir. Ada yang ingin ditanyakan?`;
         }
 
         aiBubble.innerText = responseText;
@@ -249,5 +259,3 @@
 
     window.addEventListener('DOMContentLoaded', loadTenantPortal);
   </script>
-</body>
-</html>
