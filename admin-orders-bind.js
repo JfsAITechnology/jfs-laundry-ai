@@ -1,0 +1,1 @@
+document.addEventListener('DOMContentLoaded',()=>{const dbChangeStatus=async(id,status)=>{const {error}=await jfsDb.from('jfs_orders').update({status,updated_at:new Date().toISOString()}).eq('id',id);if(error)alert('Status gagal diperbarui.');else if(window.refreshOrders)window.refreshOrders()};window.changeStatus=dbChangeStatus;});
