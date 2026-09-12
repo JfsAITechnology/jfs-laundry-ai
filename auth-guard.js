@@ -1,0 +1,26 @@
+import { getSession, isSuperAdmin, requireTenantRole, requireSuperAdmin, redirectToLogin } from './auth.js';
+
+export async function guardTenantPage(options = {}) {
+  const params = new URLSearchParams(location.search);
+  const ref = params.get('id') || 'demo-asosiasi';
+  const result = await requireTenantRole(ref, options.roles || ['owner', 'admin'], { allowDemo: true });
+  if (result.mode === 'login') { redirectToLogin(location.href); return false; }
+  if (result.mode === 'forbidden') { document.body.innerHTML = '<main style="font-family:Arial;padding:40px;text-align:center"><h1>Akses ditolak</h1><p>Akun Anda tidak memiliki akses ke tenant ini.</p><a href="login.html">Kembali ke Login</a></main>'; return false; }
+  window.JFS_AUTH_CONTEXT = result;
+  return true;
+}
+
+export async function guardSuperAdmin(options = {}) {
+  const result = await requireSuperAdmin({ allowDemo: options.allowDemo !== false });
+  if (result.mode === 'login') { redirectToLogin(location.href); return false; }
+  if (result.mode === 'forbidden') { document.body.innerHTML = '<main style="font-family:Arial;padding:40px;text-align:center"><h1>Akses Super Admin ditolak</h1><p>Gunakan akun Super Admin JFS AI.</p><a href="login.html">Kembali ke Login</a></main>'; return false; }
+  window.JFS_AUTH_CONTEXT = result;
+  return true;
+}
+
+export async function guardTenantOrSuperAdmin() {
+  const session = await getSession();
+  if (!session) return guardTenantPage();
+  if (await isSuperAdmin()) { window.JFS_AUTH_CONTEXT = { mode: 'super-admin', session }; return true; }
+  return guardTenantPage();
+}
