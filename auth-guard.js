@@ -3,7 +3,10 @@ import { getSession, isSuperAdmin, requireTenantRole, requireSuperAdmin, redirec
 export async function guardTenantPage(options = {}) {
   const params = new URLSearchParams(location.search);
   const ref = params.get('id') || 'demo-asosiasi';
-  const result = await requireTenantRole(ref, options.roles || ['owner', 'admin'], { allowDemo: true });
+  const page = (location.pathname.split('/').pop() || '').toLowerCase();
+  // Demo remains available for subscription/onboarding, but operational tenant pages require Auth.
+  const allowDemo = options.allowDemo ?? !['admin.html', 'orders.html'].includes(page);
+  const result = await requireTenantRole(ref, options.roles || ['owner', 'admin'], { allowDemo });
   if (result.mode === 'login') { redirectToLogin(location.href); return false; }
   if (result.mode === 'forbidden') { document.body.innerHTML = '<main style="font-family:Arial;padding:40px;text-align:center"><h1>Akses ditolak</h1><p>Akun Anda tidak memiliki akses ke tenant ini.</p><a href="login.html">Kembali ke Login</a></main>'; return false; }
   window.JFS_AUTH_CONTEXT = result;
