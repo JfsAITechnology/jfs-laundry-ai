@@ -72,9 +72,8 @@ export async function requireTenantRole(ref, roles = ['owner', 'admin'], options
 }
 
 export async function requireSuperAdmin(options = {}) {
-  if (options.allowDemo) return { mode: 'demo' };
   const session = await getSession();
-  if (!session) return { mode: 'login' };
+  if (!session) return options.allowDemo ? { mode: 'demo' } : { mode: 'login' };
   if (!(await isSuperAdmin())) return { mode: 'forbidden' };
   return { mode: 'super-admin', session };
 }
