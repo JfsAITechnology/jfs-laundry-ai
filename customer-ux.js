@@ -19,7 +19,8 @@
     }
     [qty,service,unit].filter(Boolean).forEach(x=>x.addEventListener('input',refresh));
     [service,unit].filter(Boolean).forEach(x=>x.addEventListener('change',refresh));
-    refresh();
+    window.jfsRefreshOrderTotal=refresh;refresh();setTimeout(refresh,800);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready);else ready();
+  document.addEventListener('jfs:portal-config-ready',()=>window.jfsRefreshOrderTotal?.());
 })();
