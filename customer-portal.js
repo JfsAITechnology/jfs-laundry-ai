@@ -99,7 +99,7 @@ function ensurePaymentField() {
     const notes = document.getElementById('order-notes');
     notes?.parentElement?.before(wrap)
 }
-async function createDbOrder(order) {
+async function trackOrder(order) {
     const tenant = await resolveDbTenant();
     if (!tenant)
         throw new Error('Tenant database tidak ditemukan');
