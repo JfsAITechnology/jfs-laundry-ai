@@ -1,6 +1,17 @@
 /* JFS AI shared branding — keeps JFS AI visible across every app view. */
 (function(){
   function mount(){
+    /* Never add a second floating logo to the customer portal; its header already owns the JFS AI logo. */
+    if(location.pathname.endsWith('/index.html') || location.pathname.endsWith('/')){
+      const customerHeader=document.querySelector('#display-store-name');
+      if(customerHeader)return;
+    }
+    /* Admin should never visually remain on a generic loading label. */
+    const tenantLabel=document.getElementById('display-tenant-id');
+    if(tenantLabel && /^Memuat/i.test(tenantLabel.textContent||'')){
+      const code=new URLSearchParams(location.search).get('id')||'demo-asosiasi';
+      tenantLabel.textContent=code;
+    }
     if(document.querySelector('[data-jfs-branding]') || document.querySelector('img[src*="logo-jfs.png"]')) return;
     const brand=document.createElement('div');
     brand.setAttribute('data-jfs-branding','1');
