@@ -1,1 +1,320 @@
-<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-cache"><title>Order Management — JFS Laundry AI</title><script src="https://cdn.tailwindcss.com"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js?v=20260914-7"></script></head><body class="bg-slate-50 text-slate-800 min-h-screen"><header class="bg-slate-900 text-white sticky top-0 z-50"><div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center"><div><h1 class="font-bold">📦 Order Management</h1><p id="tenantLabel" class="text-xs text-sky-400"></p></div><div class="flex gap-2"><a id="navAdmin" class="text-xs bg-slate-800 px-3 py-2 rounded">⚙️ Admin</a><a id="navHistory" class="text-xs bg-purple-600 px-3 py-2 rounded">📋 Riwayat</a><a id="navCustomer" class="text-xs bg-sky-600 px-3 py-2 rounded">🧺 Portal</a></div></div></header><main class="max-w-7xl mx-auto p-4 md:p-6"><section class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-5"><div class="bg-white p-4 rounded-xl border"><small>Order Aktif</small><b id="statTotal" class="block text-2xl">0</b></div><div class="bg-white p-4 rounded-xl border"><small>Omzet Aktif</small><b id="statRevenue" class="block text-xl text-emerald-600">Rp 0</b></div><div class="bg-white p-4 rounded-xl border"><small>Customer</small><b id="statCustomers" class="block text-2xl">0</b></div><div class="bg-white p-4 rounded-xl border"><small>Menunggu</small><b id="statPending" class="block text-2xl text-amber-600">0</b></div><div class="bg-white p-4 rounded-xl border"><small>Belum Dibayar</small><b id="statUnpaid" class="block text-2xl text-red-600">0</b></div></section><section id="pageError" class="hidden bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl mb-5 text-sm"></section><section class="bg-white p-4 rounded-xl border mb-5"><div class="flex gap-2"><input id="search" placeholder="Cari nama, HP, nomor order..." class="flex-1 border rounded-lg px-3 py-2 text-sm"><button id="refreshBtn" type="button" class="bg-slate-900 text-white px-4 rounded-lg text-sm">↻ Refresh</button></div></section><section class="bg-white rounded-xl border overflow-hidden"><div class="p-4 border-b"><h2 class="font-bold">Order Customer</h2><p class="text-xs text-slate-500">Semua order berasal dari Supabase. Perubahan status langsung terlihat customer.</p></div><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-slate-900 text-white text-xs"><tr><th class="p-3 text-left">Order</th><th class="p-3 text-left">Customer</th><th class="p-3">Layanan</th><th class="p-3">Total</th><th class="p-3">Pembayaran</th><th class="p-3">Status</th><th class="p-3">Aksi</th></tr></thead><tbody id="rows" class="divide-y"></tbody></table></div></section></main><script type="module">import{supabase,getSession,requireTenantRole,redirectToLogin}from'./auth.js';const qs=new URLSearchParams(location.search),rawId=qs.get('id')||'JFS-LAUNDRY-DEMO-001',demoIds=new Set(['JFS-LAUNDRY-DEMO-001','JFS-DEMO-LAUNDRY','demo-asosiasi']);let tenant=null,orders=[];const statuses=[['pending','Menunggu Jemput'],['processing','Dalam Proses'],['ready','Siap Diambil'],['completed','Selesai'],['cancelled','Dibatalkan']];const pay={unpaid:'Belum Dibayar',pending:'Menunggu',paid:'Sudah Dibayar',failed:'Gagal',refunded:'Dikembalikan'};const esc=s=>String(s??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));const idr=n=>Number(n||0).toLocaleString('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0});function err(m){const e=document.getElementById('pageError');e.textContent=m;e.classList.remove('hidden')}async function guard(){if(demoIds.has(rawId))return true;const r=await requireTenantRole(rawId,['owner','admin'],{allowDemo:false});if(r.mode==='login'){redirectToLogin(location.href);return false}if(r.mode==='forbidden'){err('Akses ditolak untuk tenant ini.');return false}window.JFS_AUTH_CONTEXT=r;return true}async function resolveTenant(){let r=await supabase.from('tenants').select('id,tenant_code,business_name').eq('tenant_code',rawId).maybeSingle();if(!r.data&&/^[0-9a-f-]{36}$/i.test(rawId))r=await supabase.from('tenants').select('id,tenant_code,business_name').eq('id',rawId).maybeSingle();if(r.error||!r.data)throw Error('Tenant tidak ditemukan.');tenant=r.data;document.getElementById('tenantLabel').textContent=(tenant.business_name||'JFS Laundry AI')+' • '+tenant.tenant_code;document.getElementById('navAdmin').href=`admin.html?id=${encodeURIComponent(tenant.tenant_code)}`;document.getElementById('navHistory').href=`history.html?id=${encodeURIComponent(tenant.tenant_code)}`;document.getElementById('navCustomer').href=`index.html?id=${encodeURIComponent(tenant.tenant_code)}`}async function loadOrders(){try{await resolveTenant();const{data,error}=await supabase.from('jfs_orders').select('id,external_id,status,total_amount,payment_status,payment_method,notes,created_at,updated_at').eq('tenant_id',tenant.id).order('created_at',{ascending:false});if(error)throw error;orders=data||[];document.getElementById('pageError').classList.add('hidden');render()}catch(e){console.error(e);err(e?.message||'Gagal memuat order.');document.getElementById('rows').innerHTML='<tr><td colspan="7" class="p-8 text-center text-red-500">Order gagal dimuat.</td></tr>'}}function meta(o){try{return JSON.parse(o.notes||'{}')}catch{return{}}}function render(){const q=document.getElementById('search').value.toLowerCase();const filtered=orders.filter(o=>{const m=meta(o);return !q||[o.external_id,m.name,m.phone,m.service].join(' ').toLowerCase().includes(q)});document.getElementById('statTotal').textContent=orders.filter(o=>!['completed','cancelled'].includes(o.status)).length;document.getElementById('statRevenue').textContent=idr(orders.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+Number(o.total_amount||0),0));document.getElementById('statCustomers').textContent=new Set(orders.map(o=>meta(o).phone||meta(o).name).filter(Boolean)).size;document.getElementById('statPending').textContent=orders.filter(o=>o.status==='pending').length;document.getElementById('statUnpaid').textContent=orders.filter(o=>o.payment_status!=='paid'&&o.status!=='cancelled').length;document.getElementById('rows').innerHTML=filtered.length?filtered.map(o=>{const m=meta(o),opts=statuses.map(([v,l])=>`<option value="${v}" ${v===o.status?'selected':''}>${l}</option>`).join('');return `<tr><td class="p-3"><b>${esc(o.external_id)}</b><div class="text-[10px] text-slate-500">${new Date(o.created_at).toLocaleString('id-ID')}</div></td><td class="p-3"><b>${esc(m.name||'-')}</b><div class="text-xs text-slate-500">${esc(m.phone||'-')}</div></td><td class="p-3 text-center">${esc(m.service||'-')}<div class="text-xs text-slate-500">${esc((m.quantity||'-')+' '+(m.unit||''))}</div></td><td class="p-3 font-bold">${idr(o.total_amount)}</td><td class="p-3 text-center"><select onchange="setPayment('${o.id}',this.value)" class="border rounded px-2 py-1 text-xs"><option value="unpaid" ${o.payment_status==='unpaid'?'selected':''}>Belum Dibayar</option><option value="pending" ${o.payment_status==='pending'?'selected':''}>Menunggu</option><option value="paid" ${o.payment_status==='paid'?'selected':''}>Sudah Dibayar</option><option value="failed" ${o.payment_status==='failed'?'selected':''}>Gagal</option><option value="refunded" ${o.payment_status==='refunded'?'selected':''}>Dikembalikan</option></select></td><td class="p-3"><select onchange="setStatus('${o.id}',this.value)" class="border rounded px-2 py-1 text-xs">${opts}</select></td><td class="p-3"><button onclick="detail('${o.id}')" class="bg-slate-100 px-2 py-1 rounded text-xs">Detail</button> <a target="_blank" rel="noopener" href="https://wa.me/${encodeURIComponent(m.phone||'')}" class="bg-emerald-600 text-white px-2 py-1 rounded text-xs">WA</a></td></tr>`}).join(''):'<tr><td colspan="7" class="p-8 text-center text-slate-400">Belum ada order.</td></tr>'}window.setStatus=async(id,status)=>{const{error}=await supabase.from('jfs_orders').update({status,updated_at:new Date().toISOString()}).eq('id',id).eq('tenant_id',tenant.id);if(error)alert(error.message);else loadOrders()};window.setPayment=async(id,payment_status)=>{const patch={payment_status,updated_at:new Date().toISOString(),...(payment_status==='paid'?{paid_at:new Date().toISOString()}:{})};const{error}=await supabase.from('jfs_orders').update(patch).eq('id',id).eq('tenant_id',tenant.id);if(error)alert(error.message);else loadOrders()};window.detail=id=>{const o=orders.find(x=>x.id===id),m=meta(o);alert(`Order ${o.external_id}\nCustomer: ${m.name||'-'}\nHP: ${m.phone||'-'}\nLayanan: ${m.service||'-'}\nJumlah: ${m.quantity||'-'} ${m.unit||''}\nCara: ${m.delivery==='dropoff'?'Antar Sendiri':'Jemput Cucian'}\nAlamat: ${m.address||'-'}\nPickup: ${m.pickupTime||'-'}\nTotal: ${idr(o.total_amount)}\nPembayaran: ${pay[o.payment_status]||o.payment_status}`)}document.getElementById('search').addEventListener('input',render);document.getElementById('refreshBtn').addEventListener('click',loadOrders);if(await guard())await loadOrders();setInterval(()=>loadOrders(),5000);</script></body></html>
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Cache-Control" content="no-cache">
+  <title>Order Management — JFS Laundry AI</title>
+  <script src="supabase-config.js?v=20260914-8"></script>
+  <style>
+    :root{font-family:Arial,sans-serif;color:#1e293b;background:#f8fafc}
+    *{box-sizing:border-box}
+    body{margin:0;background:#f8fafc}
+    header{position:sticky;top:0;z-index:10;background:#0f172a;color:#fff;padding:14px 18px}
+    header .bar{max-width:1200px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    header h1{font-size:18px;margin:0 0 4px}
+    header p{margin:0;font-size:12px;color:#38bdf8}
+    nav{display:flex;gap:8px;flex-wrap:wrap}
+    nav a{color:#fff;text-decoration:none;background:#1e293b;padding:8px 10px;border-radius:8px;font-size:12px}
+    main{max-width:1200px;margin:auto;padding:20px}
+    .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+    .card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px}
+    .card small{display:block;color:#64748b;font-size:12px;margin-bottom:6px}
+    .card b{font-size:22px}
+    .toolbar{display:flex;gap:8px;margin-bottom:18px}
+    input,select,button{font:inherit}
+    input{flex:1;border:1px solid #cbd5e1;border-radius:8px;padding:10px 12px}
+    button{border:0;border-radius:8px;padding:10px 14px;background:#0f172a;color:#fff;cursor:pointer}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .error{display:none;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;padding:12px;border-radius:10px;margin-bottom:18px;font-size:13px}
+    .table-wrap{background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:auto}
+    table{width:100%;border-collapse:collapse;min-width:850px}
+    th{background:#0f172a;color:#fff;font-size:12px;text-align:left;padding:11px}
+    td{padding:11px;border-top:1px solid #e2e8f0;font-size:13px;vertical-align:top}
+    .muted{font-size:11px;color:#64748b;margin-top:3px}
+    .money{font-weight:700}
+    td select{border:1px solid #cbd5e1;border-radius:6px;padding:6px;font-size:12px;background:#fff}
+    .actions{display:flex;gap:6px;align-items:center}
+    .detail-btn{background:#e2e8f0;color:#0f172a}
+    .wa-btn{background:#16a34a;color:#fff;text-decoration:none;padding:7px 9px;border-radius:6px;font-size:12px}
+    .empty{text-align:center;color:#94a3b8;padding:30px}
+    @media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}header .bar{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="bar">
+      <div>
+        <h1>📦 Order Management</h1>
+        <p id="tenantLabel">Memuat tenant...</p>
+      </div>
+      <nav>
+        <a id="navAdmin" href="#">⚙️ Admin</a>
+        <a id="navHistory" href="#">📋 Riwayat</a>
+        <a id="navCustomer" href="#">🧺 Portal</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="stats">
+      <div class="card"><small>Order Aktif</small><b id="statTotal">0</b></div>
+      <div class="card"><small>Omzet Aktif</small><b id="statRevenue">Rp 0</b></div>
+      <div class="card"><small>Customer</small><b id="statCustomers">0</b></div>
+      <div class="card"><small>Menunggu</small><b id="statPending">0</b></div>
+      <div class="card"><small>Belum Dibayar</small><b id="statUnpaid">0</b></div>
+    </section>
+
+    <div id="pageError" class="error"></div>
+
+    <section class="toolbar">
+      <input id="search" type="search" placeholder="Cari nama, HP, nomor order...">
+      <button id="refreshBtn" type="button">↻ Refresh</button>
+    </section>
+
+    <section class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Order</th>
+            <th>Customer</th>
+            <th>Layanan</th>
+            <th>Total</th>
+            <th>Pembayaran</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script type="module">
+    import { supabase, requireTenantRole, redirectToLogin } from './auth.js';
+
+    const qs = new URLSearchParams(location.search);
+    const rawId = qs.get('id') || 'JFS-LAUNDRY-DEMO-001';
+    const demoIds = new Set(['JFS-LAUNDRY-DEMO-001', 'JFS-DEMO-LAUNDRY', 'demo-asosiasi']);
+    const statuses = [
+      ['pending', 'Menunggu Jemput'],
+      ['processing', 'Dalam Proses'],
+      ['ready', 'Siap Diambil'],
+      ['completed', 'Selesai'],
+      ['cancelled', 'Dibatalkan']
+    ];
+
+    let tenant = null;
+    let orders = [];
+
+    const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({
+      '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    }[c]));
+
+    const idr = (value) => Number(value || 0).toLocaleString('id-ID', {
+      style:'currency', currency:'IDR', maximumFractionDigits:0
+    });
+
+    const meta = (order) => {
+      try { return JSON.parse(order.notes || '{}'); }
+      catch { return {}; }
+    };
+
+    function showError(message) {
+      const el = document.getElementById('pageError');
+      el.textContent = message;
+      el.style.display = 'block';
+    }
+
+    function hideError() {
+      document.getElementById('pageError').style.display = 'none';
+    }
+
+    async function guard() {
+      if (demoIds.has(rawId)) return true;
+      const result = await requireTenantRole(rawId, ['owner', 'admin'], { allowDemo:false });
+      if (result.mode === 'login') {
+        redirectToLogin(location.href);
+        return false;
+      }
+      if (result.mode === 'forbidden') {
+        showError('Akses ditolak untuk tenant ini.');
+        return false;
+      }
+      return true;
+    }
+
+    async function resolveTenant() {
+      let result = await supabase
+        .from('tenants')
+        .select('id,tenant_code,business_name')
+        .eq('tenant_code', rawId)
+        .maybeSingle();
+
+      if (!result.data && /^[0-9a-f-]{36}$/i.test(rawId)) {
+        result = await supabase
+          .from('tenants')
+          .select('id,tenant_code,business_name')
+          .eq('id', rawId)
+          .maybeSingle();
+      }
+
+      if (result.error || !result.data) throw new Error('Tenant tidak ditemukan.');
+
+      tenant = result.data;
+      document.getElementById('tenantLabel').textContent =
+        `${tenant.business_name || 'JFS Laundry AI'} • ${tenant.tenant_code}`;
+      document.getElementById('navAdmin').href = `admin.html?id=${encodeURIComponent(tenant.tenant_code)}`;
+      document.getElementById('navHistory').href = `history.html?id=${encodeURIComponent(tenant.tenant_code)}`;
+      document.getElementById('navCustomer').href = `index.html?id=${encodeURIComponent(tenant.tenant_code)}`;
+    }
+
+    async function loadOrders() {
+      const button = document.getElementById('refreshBtn');
+      button.disabled = true;
+      button.textContent = 'Memuat...';
+
+      try {
+        await resolveTenant();
+        const result = await supabase
+          .from('jfs_orders')
+          .select('id,external_id,status,total_amount,payment_status,payment_method,notes,created_at,updated_at')
+          .eq('tenant_id', tenant.id)
+          .order('created_at', { ascending:false });
+
+        if (result.error) throw result.error;
+        orders = result.data || [];
+        hideError();
+        render();
+      } catch (error) {
+        console.error('Order Management load error:', error);
+        showError(error?.message || 'Gagal memuat order.');
+        document.getElementById('rows').innerHTML =
+          '<tr><td colspan="7" class="empty">Order gagal dimuat.</td></tr>';
+      } finally {
+        button.disabled = false;
+        button.textContent = '↻ Refresh';
+      }
+    }
+
+    function render() {
+      const query = document.getElementById('search').value.trim().toLowerCase();
+      const filtered = orders.filter((order) => {
+        const m = meta(order);
+        return !query || [order.external_id, m.name, m.phone, m.service]
+          .join(' ')
+          .toLowerCase()
+          .includes(query);
+      });
+
+      document.getElementById('statTotal').textContent =
+        orders.filter((o) => !['completed','cancelled'].includes(o.status)).length;
+      document.getElementById('statRevenue').textContent = idr(
+        orders.filter((o) => o.status !== 'cancelled')
+          .reduce((sum, o) => sum + Number(o.total_amount || 0), 0)
+      );
+      document.getElementById('statCustomers').textContent = new Set(
+        orders.map((o) => meta(o).phone || meta(o).name).filter(Boolean)
+      ).size;
+      document.getElementById('statPending').textContent =
+        orders.filter((o) => o.status === 'pending').length;
+      document.getElementById('statUnpaid').textContent =
+        orders.filter((o) => o.payment_status !== 'paid' && o.status !== 'cancelled').length;
+
+      if (!filtered.length) {
+        document.getElementById('rows').innerHTML =
+          '<tr><td colspan="7" class="empty">Belum ada order.</td></tr>';
+        return;
+      }
+
+      document.getElementById('rows').innerHTML = filtered.map((order) => {
+        const m = meta(order);
+        const statusOptions = statuses.map(([value, label]) =>
+          `<option value="${value}" ${value === order.status ? 'selected' : ''}>${label}</option>`
+        ).join('');
+
+        const paymentOptions = [
+          ['unpaid','Belum Dibayar'],
+          ['pending','Menunggu'],
+          ['paid','Sudah Dibayar'],
+          ['failed','Gagal'],
+          ['refunded','Dikembalikan']
+        ].map(([value, label]) =>
+          `<option value="${value}" ${value === order.payment_status ? 'selected' : ''}>${label}</option>`
+        ).join('');
+
+        return `<tr>
+          <td><b>${esc(order.external_id)}</b><div class="muted">${new Date(order.created_at).toLocaleString('id-ID')}</div></td>
+          <td><b>${esc(m.name || '-')}</b><div class="muted">${esc(m.phone || '-')}</div></td>
+          <td>${esc(m.service || '-')}<div class="muted">${esc((m.quantity || '-') + ' ' + (m.unit || ''))}</div></td>
+          <td class="money">${idr(order.total_amount)}</td>
+          <td><select data-payment-id="${order.id}">${paymentOptions}</select></td>
+          <td><select data-status-id="${order.id}">${statusOptions}</select></td>
+          <td><div class="actions"><button type="button" class="detail-btn" data-detail-id="${order.id}">Detail</button><a class="wa-btn" target="_blank" rel="noopener" href="https://wa.me/${encodeURIComponent(m.phone || '')}">WA</a></div></td>
+        </tr>`;
+      }).join('');
+    }
+
+    async function updateStatus(id, status) {
+      const result = await supabase.from('jfs_orders')
+        .update({ status, updated_at:new Date().toISOString() })
+        .eq('id', id)
+        .eq('tenant_id', tenant.id);
+      if (result.error) alert(result.error.message);
+      else await loadOrders();
+    }
+
+    async function updatePayment(id, payment_status) {
+      const patch = {
+        payment_status,
+        updated_at:new Date().toISOString()
+      };
+      if (payment_status === 'paid') patch.paid_at = new Date().toISOString();
+
+      const result = await supabase.from('jfs_orders')
+        .update(patch)
+        .eq('id', id)
+        .eq('tenant_id', tenant.id);
+      if (result.error) alert(result.error.message);
+      else await loadOrders();
+    }
+
+    function showDetail(id) {
+      const order = orders.find((item) => item.id === id);
+      if (!order) return;
+      const m = meta(order);
+      const paymentLabels = {
+        unpaid:'Belum Dibayar', pending:'Menunggu', paid:'Sudah Dibayar',
+        failed:'Gagal', refunded:'Dikembalikan'
+      };
+      alert(
+        `Order ${order.external_id}\n` +
+        `Customer: ${m.name || '-'}\n` +
+        `HP: ${m.phone || '-'}\n` +
+        `Layanan: ${m.service || '-'}\n` +
+        `Jumlah: ${m.quantity || '-'} ${m.unit || ''}\n` +
+        `Cara: ${m.delivery === 'dropoff' ? 'Antar Sendiri' : 'Jemput Cucian'}\n` +
+        `Alamat: ${m.address || '-'}\n` +
+        `Pickup: ${m.pickupTime || '-'}\n` +
+        `Total: ${idr(order.total_amount)}\n` +
+        `Pembayaran: ${paymentLabels[order.payment_status] || order.payment_status}`
+      );
+    }
+
+    document.getElementById('search').addEventListener('input', render);
+    document.getElementById('refreshBtn').addEventListener('click', loadOrders);
+    document.getElementById('rows').addEventListener('change', (event) => {
+      const target = event.target;
+      if (target.matches('[data-status-id]')) updateStatus(target.dataset.statusId, target.value);
+      if (target.matches('[data-payment-id]')) updatePayment(target.dataset.paymentId, target.value);
+    });
+    document.getElementById('rows').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-detail-id]');
+      if (button) showDetail(button.dataset.detailId);
+    });
+
+    if (await guard()) await loadOrders();
+    setInterval(() => loadOrders(), 15000);
+  </script>
+</body>
+</html>
