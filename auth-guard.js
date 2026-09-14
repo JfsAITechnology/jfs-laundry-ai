@@ -9,6 +9,13 @@ export async function guardTenantPage(options = {}) {
   const result = await requireTenantRole(ref, options.roles || ['owner', 'admin'], { allowDemo });
   if (result.mode === 'login') { redirectToLogin(location.href); return false; }
   if (result.mode === 'forbidden') { document.body.innerHTML = '<main style="font-family:Arial;padding:40px;text-align:center"><h1>Akses ditolak</h1><p>Akun Anda tidak memiliki akses ke tenant ini.</p><a href="login.html">Kembali ke Login</a></main>'; return false; }
+  // Normalize UUID-based tenant links to the public tenant_code before page scripts resolve the tenant.
+  // This fixes signup/login redirects that currently carry the tenant UUID.
+  if (result.tenant && !result.tenant.demo && result.tenant.tenant_code && ref !== result.tenant.tenant_code) {
+    const next = new URL(location.href);
+    next.searchParams.set('id', result.tenant.tenant_code);
+    history.replaceState(null, '', next.toString());
+  }
   window.JFS_AUTH_CONTEXT = result;
   return true;
 }
