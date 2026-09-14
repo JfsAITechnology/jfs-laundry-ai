@@ -6,10 +6,10 @@
       '&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'
     }[c]));
   }
-  window.JFSAdminPriceUI = {
-    addRow(product = {}){
+  window.JFSAdminPriceUI={
+    addRow(product={}){
       const box=document.getElementById('pricelist-rows');
-      if(!box) return;
+      if(!box)return;
       const row=document.createElement('div');
       row.className='flex gap-2 price-row';
       row.dataset.id=product.id||'';
@@ -19,17 +19,19 @@
       row.querySelector('.service-key')?.focus();
     },
     bind(){
-      const add=[...document.querySelectorAll('button')].find(b=>b.textContent.trim().includes('Tambah') && b.closest('section')?.querySelector('#pricelist-rows'));
-      if(!add||add.dataset.bound==='1') return;
-      add.dataset.bound='1'; add.type='button';
+      const add=[...document.querySelectorAll('button')].find(b=>b.textContent.trim().includes('Tambah')&&b.closest('section')?.querySelector('#pricelist-rows'));
+      if(!add||add.dataset.bound==='1')return;
+      add.dataset.bound='1';
+      add.type='button';
+      add.removeAttribute('onclick');
       add.addEventListener('click',()=>window.JFSAdminPriceUI.addRow());
       const existing=[...document.querySelectorAll('#pricelist-rows .price-row')];
       existing.forEach(row=>{
         const remove=row.querySelector('button');
-        if(remove&&!remove.dataset.bound){remove.dataset.bound='1';remove.type='button';remove.addEventListener('click',()=>row.remove())}
+        if(remove&&!remove.dataset.bound){remove.dataset.bound='1';remove.type='button';remove.removeAttribute('onclick');remove.addEventListener('click',()=>row.remove())}
       });
     }
   };
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>window.JFSAdminPriceUI.bind());
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>window.JFSAdminPriceUI.bind());
   else window.JFSAdminPriceUI.bind();
 })();
