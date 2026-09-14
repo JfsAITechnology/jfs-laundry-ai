@@ -1,0 +1,13 @@
+/* Login is intentionally light-only for maximum readability. */
+:root{color-scheme:light}
+html,body{background:#f4f7fb!important;color:#111827!important}
+body{font-family:Arial,sans-serif;margin:0;display:grid;place-items:center;min-height:100vh}
+.card{width:min(420px,92vw);background:#fff;color:#111827;padding:28px;border-radius:18px;box-shadow:0 10px 30px #0001}
+.brand{color:#1d4ed8;font-weight:800;margin-bottom:20px}
+h1,h2,h3,p,label{color:#111827}
+input{background:#fff!important;color:#111827!important}
+input::placeholder{color:#6b7280!important}
+input,button{width:100%;box-sizing:border-box;padding:13px;margin:7px 0;border-radius:10px;border:1px solid #ccd3dd}
+button{background:#111827;color:#fff;border:0;cursor:pointer;font-weight:700}
+.msg{margin-top:12px;color:#b42318;min-height:20px}
+a{color:#1d4ed8}
