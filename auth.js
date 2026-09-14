@@ -28,12 +28,26 @@ export function isDemoTenant(ref) {
 
 export async function resolveTenant(ref) {
   if (isDemoTenant(ref)) return { id: null, tenant_code: 'demo-asosiasi', demo: true };
-  const { data, error } = await supabase
+
+  let { data, error } = await supabase
     .from('tenants')
-    .select('id, tenant_code, name, status')
-    .or(`id.eq.${ref},tenant_code.eq.${ref}`)
+    .select('id, tenant_code, business_name, status')
+    .eq('tenant_code', ref)
     .maybeSingle();
   if (error) throw error;
+
+  // Login/signup flows may carry the tenant UUID. Resolve it separately rather than
+  // interpolating untrusted URL input into a PostgREST OR expression.
+  if (!data && /^[0-9a-f-]{36}$/i.test(ref)) {
+    const result = await supabase
+      .from('tenants')
+      .select('id, tenant_code, business_name, status')
+      .eq('id', ref)
+      .maybeSingle();
+    if (result.error) throw result.error;
+    data = result.data;
+  }
+
   if (!data) throw new Error('Tenant tidak ditemukan.');
   return { ...data, demo: false };
 }
