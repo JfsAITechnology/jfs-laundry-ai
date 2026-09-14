@@ -1,3 +1,5 @@
+import { supabase } from './auth.js';
+
 /* Safe reset for the fixed demo tenant only. */
 (function(){
   'use strict';
@@ -15,7 +17,7 @@
       if(!ok)return;
       btn.disabled=true; btn.textContent='Mereset...';
       try{
-        const {data,error}=await window.supabase.rpc('jfs_reset_demo_tenant',{p_tenant_code:DEMO});
+        const {data,error}=await supabase.rpc('jfs_reset_demo_tenant',{p_tenant_code:DEMO});
         if(error)throw error;
         if(data!==true)throw new Error('Reset tidak dikonfirmasi server.');
         alert('✅ Demo berhasil di-reset. Halaman akan dimuat ulang.');
