@@ -11,6 +11,6 @@ if(location.pathname.endsWith('/index.html')) document.write('<script src="custo
 /* Admin price list UI fix. */
 if(location.pathname.endsWith('/admin.html')) document.write('<script src="admin-price-fix.js?v=20260914-1"><\/script>');
 /* Tenant admin subscription status: package, start, expiry and remaining days. */
-if(location.pathname.endsWith('/admin.html')) document.write('<script src="admin-subscription-status.js?v=20260914-2"><\/script>');
+if(location.pathname.endsWith('/admin.html')) document.write('<script src="admin-subscription-status.js?v=20260914-3"><\/script>');
 /* Subscription page must persist real requests to Supabase; the page keeps a local demo fallback. */
 if(location.pathname.endsWith('/subscription.html')) document.write('<script type="module" src="subscription-fix.js"><\/script>');
