@@ -1,6 +1,9 @@
 /* Customer portal: Supabase orders + payment choice */
 let dbTenant=null;
 let orderSubmitting=false;
+const customerParams=new URLSearchParams(location.search);
+const tenantId=customerParams.get('id')||'JFS-LAUNDRY-DEMO-001';
+const ORDER_KEY=`jfs_orders_${tenantId}`;
 async function resolveDbTenant(){
   if(!window.jfsDb)return null;
   const{data,error}=await jfsDb.from('tenants').select('id,tenant_code,business_name,address,city,province,whatsapp,phone,ai_enabled').eq('tenant_code',tenantId).maybeSingle();
@@ -9,7 +12,12 @@ async function resolveDbTenant(){
 }
 async function syncPortalConfig(){
   const tenant=await resolveDbTenant();
-  if(!tenant)return null;
+  if(!tenant){
+    activeConfig={name:'JFS Laundry AI',address:'Alamat laundry',waNumber:'',pricelist:{}};
+    window.activeConfig=activeConfig;
+    document.dispatchEvent(new CustomEvent('jfs:portal-config-ready'));
+    return activeConfig;
+  }
   /* Set tenant identity first so the store name/logo header still renders even if product RLS/query has a problem. */
   activeConfig={name:tenant.business_name||'JFS Laundry AI',address:tenant.address||[tenant.city,tenant.province].filter(Boolean).join(', ')||'Alamat laundry',waNumber:tenant.whatsapp||tenant.phone||'',pricelist:{}};
   window.activeConfig=activeConfig;
