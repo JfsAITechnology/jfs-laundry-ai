@@ -1,8 +1,40 @@
 /* Customer portal: Supabase orders + payment choice */
 let dbTenant=null;
 let orderSubmitting=false;
-async function resolveDbTenant(){if(!window.jfsDb)return null;const{data,error}=await jfsDb.from('tenants').select('id,tenant_code,business_name,address,city,province,whatsapp,phone,ai_enabled').eq('tenant_code',tenantId).maybeSingle();if(!error&&data)dbTenant=data;return dbTenant}
-async function syncPortalConfig(){const tenant=await resolveDbTenant();if(!tenant)return null;const{data:products,error}=await jfsDb.from('products').select('name,description,price,category').eq('tenant_id',tenant.id).eq('is_active',true).gt('price',0).order('name');if(error)throw error;const pricelist={};(products||[]).forEach(p=>{const key=String(p.name||'').trim().toLowerCase();if(key)pricelist[key]=Number(p.price||0)});activeConfig={name:tenant.business_name||'JFS Laundry AI',address:tenant.address||[tenant.city,tenant.province].filter(Boolean).join(', ')||'Alamat laundry',waNumber:tenant.whatsapp||tenant.phone||'',pricelist};window.activeConfig=activeConfig;window.jfsPortalProducts=products||[];const unitSelect=document.getElementById('order-unit');if(unitSelect){const allPerKg=(products||[]).filter(p=>Number(p.price)>0).every(p=>/kilogram|per\s*kg|\/\s*kg/i.test(`${p.name||''} ${p.description||''}`));if(allPerKg){unitSelect.value='Kg';unitSelect.innerHTML='<option value="Kg">Kg</option>';unitSelect.disabled=true}else{unitSelect.disabled=false}}document.dispatchEvent(new CustomEvent('jfs:portal-config-ready'));return activeConfig}
+async function resolveDbTenant(){
+  if(!window.jfsDb)return null;
+  const{data,error}=await jfsDb.from('tenants').select('id,tenant_code,business_name,address,city,province,whatsapp,phone,ai_enabled').eq('tenant_code',tenantId).maybeSingle();
+  if(!error&&data)dbTenant=data;
+  return dbTenant;
+}
+async function syncPortalConfig(){
+  const tenant=await resolveDbTenant();
+  if(!tenant)return null;
+  /* Set tenant identity first so the store name/logo header still renders even if product RLS/query has a problem. */
+  activeConfig={name:tenant.business_name||'JFS Laundry AI',address:tenant.address||[tenant.city,tenant.province].filter(Boolean).join(', ')||'Alamat laundry',waNumber:tenant.whatsapp||tenant.phone||'',pricelist:{}};
+  window.activeConfig=activeConfig;
+  document.dispatchEvent(new CustomEvent('jfs:portal-config-ready'));
+  let products=[];
+  try{
+    const{data,error}=await jfsDb.from('products').select('name,description,price,category').eq('tenant_id',tenant.id).eq('is_active',true).gt('price',0).order('name');
+    if(error)throw error;
+    products=data||[];
+  }catch(error){
+    console.warn('Portal products sync failed',error);
+  }
+  const pricelist={};
+  products.forEach(p=>{const key=String(p.name||'').trim().toLowerCase();if(key)pricelist[key]=Number(p.price||0)});
+  activeConfig.pricelist=pricelist;
+  window.activeConfig=activeConfig;
+  window.jfsPortalProducts=products;
+  const unitSelect=document.getElementById('order-unit');
+  if(unitSelect){
+    const allPerKg=products.filter(p=>Number(p.price)>0).every(p=>/kilogram|per\s*kg|\/\s*kg/i.test(`${p.name||''} ${p.description||''}`));
+    if(products.length&&allPerKg){unitSelect.value='Kg';unitSelect.innerHTML='<option value="Kg">Kg</option>';unitSelect.disabled=true}else{unitSelect.disabled=false}
+  }
+  document.dispatchEvent(new CustomEvent('jfs:portal-config-ready'));
+  return activeConfig;
+}
 function ensurePaymentField(){const form=document.querySelector('form[onsubmit="sendOrder(event)"]');if(!form||document.getElementById('order-payment'))return;const wrap=document.createElement('div');wrap.innerHTML='<label class="block text-[11px] mb-1">Pembayaran</label><select id="order-payment" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2"><option value="cash">Bayar saat selesai / di toko</option><option value="transfer">Transfer bank</option><option value="qris">QRIS</option></select><p class="text-[9px] text-slate-500 mt-1">Pembayaran online dapat dikonfirmasi admin.</p>';const notes=document.getElementById('order-notes');notes?.parentElement?.before(wrap)}
 async function createDbOrder(order){const tenant=await resolveDbTenant();if(!tenant)throw new Error('Tenant database tidak ditemukan');const payload={tenant_id:tenant.id,status:'pending',total_amount:order.total,currency:'IDR',source:'customer_portal',external_id:order.id,payment_status:order.payment==='cash'?'unpaid':'pending',payment_method:order.payment,notes:JSON.stringify({name:order.name,phone:order.phone,service:order.service,quantity:order.qty,unit:order.unit,delivery:order.delivery,address:order.address,pickupTime:order.pickupTime,notes:order.notes})};const{data,error}=await jfsDb.from('jfs_orders').insert(payload).select('id,external_id,status,total_amount,payment_status,payment_method,created_at').single();if(error)throw error;return data}
 function newOrderId(){if(window.crypto?.randomUUID)return 'ORD-'+crypto.randomUUID().replace(/-/g,'').slice(0,12).toUpperCase();return 'ORD-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,6).toUpperCase()}
