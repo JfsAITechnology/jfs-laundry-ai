@@ -14,3 +14,6 @@ if(location.pathname.endsWith('/admin.html')) document.write('<script src="admin
 if(location.pathname.endsWith('/admin.html')) document.write('<script src="admin-subscription-status.js?v=20260914-3"><\/script>');
 /* Subscription page must persist real requests to Supabase; the page keeps a local demo fallback. */
 if(location.pathname.endsWith('/subscription.html')) document.write('<script type="module" src="subscription-fix.js"><\/script>');
+/* Fixed public demo workflow. Production pages do not use these handlers. */
+if(location.pathname.endsWith('/admin.html')) document.write('<script src="demo-admin-public.js?v=20260916-1"><\/script>');
+if(location.pathname.endsWith('/orders.html')) document.write('<script src="demo-orders-public.js?v=20260916-1"><\/script>');
