@@ -17,3 +17,5 @@ if(location.pathname.endsWith('/subscription.html')) document.write('<script typ
 /* Fixed public demo workflow. Production pages do not use these handlers. */
 if(location.pathname.endsWith('/admin.html')) document.write('<script src="demo-admin-public.js?v=20260916-2"><\/script>');
 if(location.pathname.endsWith('/orders.html')) document.write('<script src="demo-orders-public.js?v=20260916-1"><\/script>');
+/* Admin Dashboard UX enhancements: quick actions and clearer navigation. */
+if(location.pathname.endsWith('/admin.html')) document.write('<script src="admin-dashboard-ux.js?v=20260916-1"><\/script>');
