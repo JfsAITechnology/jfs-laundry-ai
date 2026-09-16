@@ -9,25 +9,38 @@
 <title>Dashboard Admin — JFS Laundry AI</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={darkMode:'class'}</script>
-<script src="supabase-config.js?v=20260916-1"></script>
+<script src="supabase-config.js?v=20260916-2"></script>
 <style>
-:root{font-size:16px}body{font-size:1rem;background:#020617;color:#f8fafc}
+:root{font-size:16px}body{font-size:1rem;background:#f8fafc;color:#172033}
+body.dark{background:#020617;color:#f8fafc}
 body.light{background:#f8fafc;color:#172033}
-.light .panel{background:#fff;border-color:#cbd5e1}
-.light .muted{color:#334155}
-.light .subtle{color:#475569}
-.light input{background:#fff;color:#172033;border-color:#94a3b8}
-.light .nav-secondary{background:#e2e8f0;color:#172033;border-color:#cbd5e1}
-.light .stat{background:#fff;border-color:#cbd5e1}
-.light .order-card{background:#f8fafc;border-color:#cbd5e1}
-.dark input{background:#020617;color:#f8fafc}
+body.dark .panel,body.dark .stat{background:#0f172a!important;border-color:#334155!important;color:#f8fafc}
+body.dark .order-card{background:#020617!important;border-color:#334155!important;color:#f8fafc}
+body.dark .muted{color:#e2e8f0!important}
+body.dark .subtle{color:#cbd5e1!important}
+body.dark label{color:#e2e8f0!important}
+body.dark input{background:#020617!important;color:#fff!important;border-color:#475569!important}
+body.dark input::placeholder{color:#cbd5e1!important}
+body.dark .nav-secondary{background:#1e293b!important;color:#fff!important;border-color:#475569!important}
+body.dark .border-slate-800{border-color:#334155!important}
+body.dark .bg-slate-900,.dark .bg-slate-900\/60,.dark .bg-slate-900\/80{background:#0f172a!important}
+body.dark .bg-slate-950{background:#020617!important}
+body.dark .text-slate-400{color:#e2e8f0!important}
+body.dark .text-slate-500{color:#cbd5e1!important}
+body.light .panel{background:#fff;border-color:#cbd5e1}
+body.light .muted{color:#334155}
+body.light .subtle{color:#475569}
+body.light input{background:#fff;color:#172033;border-color:#94a3b8}
+body.light .nav-secondary{background:#e2e8f0;color:#172033;border-color:#cbd5e1}
+body.light .stat{background:#fff;border-color:#cbd5e1}
+body.light .order-card{background:#f8fafc;border-color:#cbd5e1}
 </style>
 </head>
-<body class="min-h-screen app">
+<body class="min-h-screen app light">
 <main class="max-w-7xl mx-auto px-4 py-5 md:px-8 md:py-8 space-y-6">
 <header class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-b border-slate-800 pb-5">
 <div class="flex items-center gap-3 min-w-0"><img src="logo-jfs.png" alt="JFS AI" class="w-14 h-14 rounded-2xl object-contain bg-white p-1 shrink-0"><div class="min-w-0"><p class="text-sm text-blue-400 font-extrabold tracking-wide">JFS AI TECHNOLOGY</p><h1 class="text-2xl md:text-3xl font-extrabold truncate">Dashboard Admin</h1><p class="text-sm muted text-slate-400 mt-1" id="display-business">Memuat usaha...</p></div></div>
-<div class="flex flex-wrap gap-2 items-center"><a id="customerLink" class="nav-secondary border border-slate-700 bg-slate-800 text-white text-sm font-bold px-4 py-2.5 rounded-xl">👁️ Halaman Customer</a><button id="themeToggle" type="button" class="nav-secondary border border-slate-700 bg-slate-800 text-white text-sm font-bold px-4 py-2.5 rounded-xl">☀️ Mode Terang</button><button id="logoutBtn" type="button" class="nav-secondary border border-slate-700 bg-slate-800 text-white text-sm font-bold px-4 py-2.5 rounded-xl">Keluar</button></div>
+<div class="flex flex-wrap gap-2 items-center"><a id="customerLink" class="nav-secondary border border-slate-700 bg-slate-800 text-white text-sm font-bold px-4 py-2.5 rounded-xl">👁️ Halaman Customer</a><button id="themeToggle" type="button" class="nav-secondary border border-slate-700 bg-slate-800 text-white text-sm font-bold px-4 py-2.5 rounded-xl">🌙 Mode Gelap</button><button id="logoutBtn" type="button" class="nav-secondary border border-slate-700 bg-slate-800 text-white text-sm font-bold px-4 py-2.5 rounded-xl">Keluar</button></div>
 </header>
 <nav class="flex flex-wrap gap-2"><a id="ordersLink" class="bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold px-4 py-2.5 rounded-xl">📦 Pesanan</a><a id="historyLink" class="bg-purple-600 hover:bg-purple-500 text-white text-sm font-bold px-4 py-2.5 rounded-xl">📋 Riwayat</a><a id="omzetLink" class="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold px-4 py-2.5 rounded-xl">💰 Omzet</a><a id="subscriptionLink" class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold px-4 py-2.5 rounded-xl">🚀 Paket JFS AI</a><button id="reset-demo-data" type="button" class="hidden bg-rose-700 hover:bg-rose-600 text-white text-sm font-bold px-4 py-2.5 rounded-xl">🧹 Reset Data Demo</button></nav>
 <section class="grid grid-cols-2 lg:grid-cols-4 gap-4"><div class="stat bg-slate-900 border border-slate-800 rounded-2xl p-5"><p class="text-sm muted text-slate-400 font-semibold">Pesanan Aktif</p><b id="statOrders" class="text-3xl md:text-4xl block mt-1">0</b></div><div class="stat bg-slate-900 border border-slate-800 rounded-2xl p-5"><p class="text-sm muted text-slate-400 font-semibold">Omzet Aktif</p><b id="statRevenue" class="text-2xl md:text-3xl text-emerald-400 block mt-1">Rp 0</b></div><div class="stat bg-slate-900 border border-slate-800 rounded-2xl p-5"><p class="text-sm muted text-slate-400 font-semibold">Customer Aktif</p><b id="statCustomers" class="text-3xl md:text-4xl text-blue-400 block mt-1">0</b></div><div class="stat bg-slate-900 border border-slate-800 rounded-2xl p-5"><p class="text-sm muted text-slate-400 font-semibold">Menunggu Jemput</p><b id="statPending" class="text-3xl md:text-4xl text-amber-400 block mt-1">0</b></div></section>
@@ -38,7 +51,7 @@ body.light{background:#f8fafc;color:#172033}
 <footer class="text-center text-sm muted text-slate-500 pb-4">JFS AI Technology • Dashboard untuk pengelola usaha</footer>
 </main>
 <script type="module">
-import {supabase} from './auth.js?v=20260916-1';
+import {supabase} from './auth.js?v=20260916-2';
 const params=new URLSearchParams(location.search),mode=params.get('mode'),explicitCode=params.get('id');
 const code=explicitCode||(mode==='production'?localStorage.getItem('jfs_current_tenant'):'JFS-LAUNDRY-DEMO-001');
 if(!code){document.body.innerHTML='<main class="p-8 text-red-500 text-lg font-bold">Sesi pengelola usaha tidak ditemukan. Silakan login kembali.</main>';throw new Error('NO_PRODUCTION_SESSION')}
@@ -46,9 +59,9 @@ if(code==='JFS-LAUNDRY-DEMO-001'&&mode!=='production')document.getElementById('r
 let business=null,products=[];
 const esc=v=>String(v??'').replace(/[&<>\'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]||c));
 const idr=n=>Number(n||0).toLocaleString('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0});
-const setTheme=t=>{document.body.classList.toggle('light',t==='light');document.documentElement.classList.toggle('dark',t==='dark');localStorage.setItem('jfs_admin_theme',t);document.getElementById('themeToggle').textContent=t==='light'?'🌙 Mode Gelap':'☀️ Mode Terang'};
+const setTheme=t=>{const dark=t==='dark';document.documentElement.classList.toggle('dark',dark);document.body.classList.toggle('dark',dark);document.body.classList.toggle('light',!dark);localStorage.setItem('jfs_admin_theme',t);document.getElementById('themeToggle').textContent=dark?'☀️ Mode Terang':'🌙 Mode Gelap'};
 setTheme(localStorage.getItem('jfs_admin_theme')||'light');
-document.getElementById('themeToggle').onclick=()=>setTheme(document.body.classList.contains('light')?'dark':'light');
+document.getElementById('themeToggle').onclick=()=>setTheme(document.body.classList.contains('dark')?'light':'dark');
 document.getElementById('logoutBtn').onclick=async()=>{await supabase.auth.signOut();localStorage.removeItem('jfs_current_tenant');location.href='login.html'};
 async function resolveBusiness(){const{data,error}=await supabase.rpc('jfs_get_tenant_context_by_code',{p_tenant_code:code});if(error)throw error;business=data?.[0];if(!business)throw Error('Usaha tidak ditemukan atau akun belum memiliki akses.');document.getElementById('display-business').textContent=business.business_name||'Usaha Anda';const c=encodeURIComponent(business.tenant_code);for(const[id,file]of [['ordersLink','orders.html'],['viewAll','orders.html'],['historyLink','history.html'],['omzetLink','omzet.html'],['subscriptionLink','subscription.html']])document.getElementById(id).href=`${file}?id=${c}`;document.getElementById('customerLink').href=`index.html?id=${c}`;document.getElementById('admin-store-name').value=business.business_name||'';document.getElementById('admin-store-wa').value=business.whatsapp||business.phone||'';document.getElementById('admin-store-address').value=business.address||''}
 async function loadOrders(){const{data,error}=await supabase.rpc('jfs_admin_recent_orders',{p_tenant_id:business.id});if(error)throw error;const active=(data||[]).filter(o=>!['completed','cancelled'].includes(o.status));document.getElementById('statOrders').textContent=active.length;document.getElementById('statRevenue').textContent=idr(active.reduce((s,o)=>s+Number(o.total_amount||0),0));document.getElementById('statCustomers').textContent=new Set(active.map(o=>{try{const m=JSON.parse(o.notes||'{}');return m.phone||m.name}catch{return''}}).filter(Boolean)).size;document.getElementById('statPending').textContent=active.filter(o=>o.status==='pending').length;const box=document.getElementById('recentOrders');box.innerHTML='';active.slice(0,5).forEach(o=>{let m={};try{m=JSON.parse(o.notes||'{}')}catch{}const status={pending:'Menunggu Jemput',processing:'Dalam Proses',ready:'Siap Diambil'}[o.status]||o.status;box.insertAdjacentHTML('beforeend',`<div class="order-card flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-950 border border-slate-800 rounded-xl p-4"><div><b class="text-base">${esc(m.name||'Customer')}</b><p class="text-sm muted text-slate-400 mt-1">${esc(m.service||'-')} • ${esc((m.quantity||'-')+' '+(m.unit||''))} • ${esc(o.external_id||o.id)}</p></div><div class="flex items-center gap-3"><b class="text-base text-emerald-400">${idr(o.total_amount)}</b><span class="text-sm text-amber-300 font-semibold">${esc(status)}</span><a href="orders.html?id=${encodeURIComponent(business.tenant_code)}" class="text-sm bg-slate-800 px-3 py-2 rounded-lg">Kelola</a></div></div>`)});if(!active.length)box.innerHTML='<p class="text-sm muted text-slate-500 py-3">Belum ada pesanan aktif.</p>'}
