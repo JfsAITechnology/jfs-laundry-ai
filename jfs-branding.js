@@ -1,6 +1,13 @@
 /* JFS AI shared branding — keeps JFS AI visible across every app view. */
 (function(){
   function mount(){
+    /* Keep the admin business name readable when dark mode is enabled. */
+    if(!document.getElementById('jfs-admin-header-contrast')){
+      const style=document.createElement('style');
+      style.id='jfs-admin-header-contrast';
+      style.textContent='body.dark #display-business{color:#334155!important}';
+      document.head.appendChild(style);
+    }
     /* Never add a second floating logo to the customer portal; its header already owns the JFS AI logo. */
     if(location.pathname.endsWith('/index.html') || location.pathname.endsWith('/')){
       const customerHeader=document.querySelector('#display-store-name');
