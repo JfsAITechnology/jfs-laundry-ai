@@ -6,6 +6,19 @@
       '&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'
     }[c]));
   }
+  function fixRefreshButton(){
+    const refresh=document.getElementById('refresh-dashboard');
+    if(!refresh)return;
+    refresh.classList.add('text-white');
+    refresh.style.color='#fff';
+    const styleId='jfs-admin-refresh-theme-fix';
+    if(!document.getElementById(styleId)){
+      const style=document.createElement('style');
+      style.id=styleId;
+      style.textContent='body.dark #refresh-dashboard{color:#fff!important} body.light #refresh-dashboard{color:#172033!important}';
+      document.head.appendChild(style);
+    }
+  }
   window.JFSAdminPriceUI={
     addRow(product={}){
       const box=document.getElementById('pricelist-rows');
@@ -30,8 +43,10 @@
         const remove=row.querySelector('button');
         if(remove&&!remove.dataset.bound){remove.dataset.bound='1';remove.type='button';remove.removeAttribute('onclick');remove.addEventListener('click',()=>row.remove())}
       });
+      fixRefreshButton();
     }
   };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>window.JFSAdminPriceUI.bind());
   else window.JFSAdminPriceUI.bind();
+  window.addEventListener('load',fixRefreshButton);
 })();
