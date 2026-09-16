@@ -2,7 +2,8 @@
 (function(){
   'use strict';
   const DEMO='JFS-LAUNDRY-DEMO-001';
-  if(new URLSearchParams(location.search).get('id')!==DEMO || new URLSearchParams(location.search).get('mode')==='production') return;
+  const params=new URLSearchParams(location.search);
+  if(params.get('id')!==DEMO || params.get('mode')==='production') return;
   document.addEventListener('DOMContentLoaded', async ()=>{
     try{
       const {supabase}=await import('./auth.js?v=20260916-2');
@@ -11,7 +12,7 @@
       const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]||c));
       const idr=n=>Number(n||0).toLocaleString('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0});
       let business=null,products=[];
-      $('reset-demo-data')?.classList.add('hidden');
+      $('reset-demo-data')?.classList.remove('hidden');
       $('logoutBtn')?.classList.add('hidden');
       $('historyLink')?.classList.add('hidden');
       $('omzetLink')?.classList.add('hidden');
@@ -52,8 +53,22 @@
         }catch(e){console.error(e);alert('Gagal menyimpan Demo: '+(e?.message||e))}
         finally{button.disabled=false;button.textContent='💾 Simpan Perubahan'}
       }
-      const save=$('save-admin-changes');if(save){const fresh=save.cloneNode(true);save.replaceWith(fresh);fresh.addEventListener('click',save)}
+      async function resetDemo(){
+        const button=$('reset-demo-data');
+        if(!button)return;
+        if(!confirm('Reset semua data Demo? Nama usaha, tarif/layanan, pesanan, dan permintaan paket akan dikembalikan ke kondisi awal Demo.'))return;
+        button.disabled=true;button.textContent='⏳ Mereset...';
+        try{
+          const r=await rpc('jfs_public_demo_reset');
+          if(r.error)throw r.error;
+          alert('✅ Data Demo berhasil di-reset.');
+          await Promise.all([loadBusiness(),loadProducts(),loadOrders()]);
+        }catch(e){console.error(e);alert('Gagal reset Demo: '+(e?.message||e))}
+        finally{button.disabled=false;button.textContent='🧹 Reset Data Demo'}
+      }
+      const saveButton=$('save-admin-changes');if(saveButton){const fresh=saveButton.cloneNode(true);saveButton.replaceWith(fresh);fresh.addEventListener('click',save)}
       const add=$('add-price-row');if(add){const fresh=add.cloneNode(true);add.replaceWith(fresh);fresh.addEventListener('click',()=>addRow())}
+      const reset=$('reset-demo-data');if(reset){const fresh=reset.cloneNode(true);reset.replaceWith(fresh);fresh.classList.remove('hidden');fresh.addEventListener('click',resetDemo)}
       await Promise.all([loadBusiness(),loadProducts(),loadOrders()]);
     }catch(e){console.error('Public demo admin error',e);alert('Demo Dashboard gagal dimuat: '+(e?.message||e))}
   });
