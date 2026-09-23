@@ -9,7 +9,7 @@
 <title>Dashboard Admin — JFS Laundry AI</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={darkMode:'class'}</script>
-<script src="supabase-config.js?v=20260916-2"></script>
+<script src="supabase-config.js?v=20260923-admin-premium"></script>
 <style>
 :root{font-size:16px}body{font-size:1rem;background:#f8fafc;color:#172033}
 body.dark{background:#020617;color:#f8fafc}
@@ -37,7 +37,34 @@ body.light .refresh-dashboard{background:#e2e8f0!important;color:#172033!importa
 body.light .stat{background:#fff;border-color:#cbd5e1}
 body.light .order-card{background:#f8fafc;border-color:#cbd5e1}
 </style>
-</head>
+<style id="jfs-premium-theme">
+:root{--jfs-purple:#7c3aed;--jfs-blue:#2563eb;--jfs-neon:#22d3ee;--jfs-deep:#0D1117;--jfs-card:#151A21;--jfs-card2:#11161D;--jfs-line:#2A3340;--jfs-light:#F5F7FB;--jfs-light-card:#fff;--jfs-light-line:#E5EAF2;--jfs-text:#F8FAFC;--jfs-light-text:#172033}
+body{font-family:Inter,"Plus Jakarta Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;transition:background-color .2s,color .2s}
+body.dark{background:var(--jfs-deep)!important;color:var(--jfs-text)!important}
+body.light{background:var(--jfs-light)!important;color:var(--jfs-light-text)!important}
+body.dark .panel,body.dark .stat{background:linear-gradient(180deg,var(--jfs-card),var(--jfs-card2))!important;border-color:var(--jfs-line)!important;box-shadow:0 12px 30px rgba(0,0,0,.16)}
+body.light .panel,body.light .stat{background:var(--jfs-light-card)!important;border-color:var(--jfs-light-line)!important;box-shadow:0 10px 25px rgba(20,30,50,.06)}
+body.dark .order-card{background:#0f141b!important;border-color:var(--jfs-line)!important}
+body.light .order-card{background:#f9fbfe!important;border-color:var(--jfs-light-line)!important}
+body.dark input{background:#0a0e13!important;color:#fff!important;border-color:#364152!important}
+body.light input{background:#fff!important;color:#172033!important;border-color:#cbd5e1!important}
+body.dark .muted,body.dark .subtle{color:#b9c3d0!important}
+body.light .muted{color:#475569!important}
+body.light .subtle{color:#64748b!important}
+#customerLink,#themeToggle,#logoutBtn{background:linear-gradient(135deg,#334155,#1f2937)!important;border:1px solid #475569!important;color:#fff!important;box-shadow:0 6px 16px rgba(15,23,42,.14)}
+#ordersLink,#historyLink,#omzetLink,#subscriptionLink,#reset-demo-data{background:linear-gradient(135deg,var(--jfs-purple),var(--jfs-blue))!important;border:0!important;box-shadow:0 8px 20px rgba(80,60,200,.22)}
+#viewAll{background:linear-gradient(135deg,var(--jfs-purple),var(--jfs-blue))!important;box-shadow:0 8px 20px rgba(80,60,200,.22)}
+#statOrders,#statRevenue,#statCustomers,#statPending{ text-shadow:0 0 18px rgba(34,211,238,.16)}
+#statOrders,#statCustomers{color:#22d3ee!important}
+#statRevenue{color:#22d3ee!important}
+#statPending{color:#60a5fa!important}
+#subscriptionLink{box-shadow:0 8px 22px rgba(37,99,235,.25)}
+#add-price-row{background:linear-gradient(135deg,#6d28d9,#2563eb)!important}
+#save-admin-changes{background:linear-gradient(135deg,#7c3aed,#2563eb)!important;box-shadow:0 10px 24px rgba(76,29,149,.22)}
+#refresh-dashboard{border-radius:12px}
+body.light #customerLink,body.light #themeToggle,body.light #logoutBtn{background:linear-gradient(135deg,#334155,#1f2937)!important;color:#fff!important}
+@media(max-width:640px){#customerLink,#themeToggle,#logoutBtn{padding-left:12px!important;padding-right:12px!important}}
+</style></head>
 <body class="min-h-screen app light">
 <main class="max-w-7xl mx-auto px-4 py-5 md:px-8 md:py-8 space-y-6">
 <header class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-b border-slate-800 pb-5">
@@ -53,7 +80,7 @@ body.light .order-card{background:#f8fafc;border-color:#cbd5e1}
 <footer class="text-center text-sm muted text-slate-500 pb-4">JFS AI Technology • Dashboard untuk pengelola usaha</footer>
 </main>
 <script type="module">
-import {supabase} from './auth.js?v=20260916-2';
+import {supabase} from './auth.js?v=20260923-admin-premium';
 const params=new URLSearchParams(location.search),mode=params.get('mode'),explicitCode=params.get('id');
 const code=explicitCode||(mode==='production'?localStorage.getItem('jfs_current_tenant'):'JFS-LAUNDRY-DEMO-001');
 if(!code){document.body.innerHTML='<main class="p-8 text-red-500 text-lg font-bold">Sesi pengelola usaha tidak ditemukan. Silakan login kembali.</main>';throw new Error('NO_PRODUCTION_SESSION')}
