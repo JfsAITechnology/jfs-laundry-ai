@@ -10,6 +10,8 @@ if(!location.pathname.endsWith('/index.html')) document.write('<script src="jfs-
 if(location.pathname.endsWith('/index.html')) document.write('<script src="customer-ux.js"><\/script>');
 /* Admin price list UI fix. */
 if(location.pathname.endsWith('/admin.html')) document.write('<script src="admin-price-fix.js?v=20260914-1"><\/script>');
+/* Production owner access: login + trial/subscription gate. */
+if(['admin.html','orders.html','history.html','omzet.html','subscription.html'].includes(location.pathname.split('/').pop().toLowerCase())) document.write('<script type="module" src="production-access-guard.js?v=20260924-1"><\/script>');
 /* Tenant admin subscription status: package, start, expiry and remaining days. */
 if(location.pathname.endsWith('/admin.html')) document.write('<script src="admin-subscription-status.js?v=20260914-3"><\/script>');
 /* Subscription page must persist real requests to Supabase; the page keeps a local demo fallback. */
