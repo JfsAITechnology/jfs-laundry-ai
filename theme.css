@@ -6,3 +6,12 @@ html[data-jfs-page="admin"] [class*="text-[10px]"],html[data-jfs-page="super-adm
 html[data-jfs-page="admin"] [class*="text-[11px]"],html[data-jfs-page="super-admin"] [class*="text-[11px]"],html[data-jfs-page="subscription"] [class*="text-[11px]"]{font-size:.8125rem!important;line-height:1.35!important}
 html[data-jfs-page="admin"] input,html[data-jfs-page="admin"] select,html[data-jfs-page="admin"] textarea,html[data-jfs-page="super-admin"] input,html[data-jfs-page="super-admin"] select,html[data-jfs-page="super-admin"] textarea,html[data-jfs-page="subscription"] input,html[data-jfs-page="subscription"] select,html[data-jfs-page="subscription"] textarea{font-size:16px}
 @media(max-width:480px){.jfs-theme-toggle{right:10px;bottom:10px;width:40px;height:40px}}
+/* Unified theme toggle: one control, top-right, always readable */
+.jfs-theme-toggle{position:fixed!important;right:16px!important;top:16px!important;bottom:auto!important;z-index:99999!important;width:42px;height:42px;border:1px solid var(--jfs-border);border-radius:999px;background:var(--jfs-surface);color:var(--jfs-text);box-shadow:var(--jfs-shadow);display:grid;place-items:center;font-size:18px;cursor:pointer}
+html[data-theme="light"] .status,html[data-theme="light"] .plan,html[data-theme="light"] nav a,html[data-theme="light"] nav button{background:#fff!important;color:#172033!important}
+html[data-theme="light"] .status b,html[data-theme="light"] .plan h3,html[data-theme="light"] nav a,html[data-theme="light"] nav button,html[data-theme="light"] .meta b{color:#172033!important}
+html[data-theme="light"] .meta div{background:#f5f7fb!important;color:#172033!important}
+html[data-theme="dark"] .status,html[data-theme="dark"] .plan,html[data-theme="dark"] nav a,html[data-theme="dark"] nav button{background:var(--jfs-surface)!important;color:var(--jfs-text)!important}
+html[data-theme="dark"] .meta div{background:var(--jfs-surface-2)!important;color:var(--jfs-text)!important}
+html[data-theme="dark"] .status b,html[data-theme="dark"] .plan h3,html[data-theme="dark"] nav a,html[data-theme="dark"] nav button,html[data-theme="dark"] .meta b{color:var(--jfs-text)!important}
+@media(max-width:480px){.jfs-theme-toggle{right:10px!important;top:10px!important;bottom:auto!important;width:40px;height:40px}}
