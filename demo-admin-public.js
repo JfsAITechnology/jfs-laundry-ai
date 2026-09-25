@@ -43,7 +43,7 @@
         const button=$('save-admin-changes');button.disabled=true;button.textContent='Menyimpan...';
         try{
           const name=$('admin-store-name').value.trim(),wa=$('admin-store-wa').value.replace(/\D/g,''),address=$('admin-store-address').value.trim();if(!name)throw Error('Nama usaha wajib diisi.');
-          let r=await rpc('jfs_public_demo_update_tenant',{p_business_name:name,p_whatsapp:wa,p_address:address,p_logo_url:null});if(r.error)throw r.error;
+          /* Demo branding is intentionally not editable anonymously. Branding is changed only by Super Admin or an authenticated tenant owner/admin. */
           for(const row of [...document.querySelectorAll('.price-row')]){
             if(row.classList.contains('hidden')&&row.dataset.id){r=await rpc('jfs_public_demo_deactivate_product',{p_product_id:row.dataset.id});if(r.error)throw r.error;continue}
             const service=row.querySelector('.service-key')?.value.trim(),price=Number(row.querySelector('.service-price')?.value||0);if(!service&&!price)continue;if(!service||price<=0)throw Error('Nama layanan dan harga harus diisi.');
