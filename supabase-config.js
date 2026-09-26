@@ -11,7 +11,7 @@ if(location.pathname.endsWith('/index.html')) document.write('<script src="custo
 /* Admin price list UI fix. */
 if(location.pathname.endsWith('/admin.html')) document.write('<script src="admin-price-fix.js?v=20260914-1"><\/script>');
 /* Production owner access: login + trial/subscription gate. */
-if(['admin.html','orders.html','history.html','omzet.html','subscription.html'].includes(location.pathname.split('/').pop().toLowerCase())) document.write('<script type="module" src="production-access-guard.js?v=20260924-1"><\/script>');
+if(['admin.html','orders.html','history.html','omzet.html','subscription.html'].includes(location.pathname.split('/').pop().toLowerCase()) && new URLSearchParams(location.search).get('id')!=='JFS-LAUNDRY-DEMO-001') document.write('<script type="module" src="production-access-guard.js?v=20260924-2"><\/script>');
 /* Tenant admin subscription status: package, start, expiry and remaining days. */
 if(location.pathname.endsWith('/admin.html')) document.write('<script src="admin-subscription-status.js?v=20260914-3"><\/script>');
 /* Subscription page must persist real requests to Supabase; the page keeps a local demo fallback. */
