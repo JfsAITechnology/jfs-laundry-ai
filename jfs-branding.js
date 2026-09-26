@@ -22,8 +22,8 @@
     if(document.querySelector('[data-jfs-branding]') || document.querySelector('img[src*="logo-jfs.png"]')) return;
     const brand=document.createElement('div');
     brand.setAttribute('data-jfs-branding','1');
-    brand.className='fixed top-3 right-3 z-[9999] flex items-center gap-1 rounded-md border border-slate-700/70 bg-slate-950/90 px-1.5 py-1 shadow-lg backdrop-blur';
-    brand.innerHTML='<img src="logo-jfs.png" alt="JFS AI" class="w-5 h-5 rounded-md object-contain bg-white p-0.5"><div class="leading-tight"><div class="text-[8px] font-extrabold text-white">JFS AI</div><div class="text-[6px] text-slate-400">TECHNOLOGY</div></div>';
+    brand.className='fixed bottom-3 left-1/2 -translate-x-1/2 z-[9999] flex items-center justify-center gap-1.5 rounded-md border border-slate-700/70 bg-slate-950/90 px-2 py-1 shadow-lg backdrop-blur';
+    brand.innerHTML='<img src="logo-jfs.png" alt="JFS AI" class="w-2.5 h-2.5 rounded-sm object-contain bg-white p-0.5"><div class="leading-tight whitespace-nowrap"><span class="text-[7px] font-semibold text-slate-300">Powered by </span><span class="text-[7px] font-extrabold text-white">JFS AI Technology</span></div>';
     document.body.appendChild(brand);
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',mount); else mount();
