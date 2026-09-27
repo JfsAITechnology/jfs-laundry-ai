@@ -11,7 +11,7 @@
       const $=id=>document.getElementById(id);
       const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]||c));
       const idr=n=>Number(n||0).toLocaleString('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0});
-      let business=null,products=[];
+      let business=null,products=[],r=null;
       $('reset-demo-data')?.classList.remove('hidden');
       $('logoutBtn')?.classList.add('hidden');
       $('historyLink')?.classList.add('hidden');
