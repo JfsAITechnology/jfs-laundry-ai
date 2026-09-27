@@ -18,7 +18,7 @@
       $('omzetLink')?.classList.add('hidden');
       $('subscriptionLink')?.classList.add('hidden');
       $('display-business').textContent='JFS Laundry AI Demo — Mode Demo';
-      const customerUrl=`index.html?id=${encodeURIComponent(DEMO)}`;
+      const customerUrl=`index.html?id=${encodeURIComponent(DEMO)}&customer=1&v=20260927`;
       $('customerLink').href=customerUrl;
       $('ordersLink').href=`orders.html?id=${encodeURIComponent(DEMO)}`;
       $('viewAll').href=`orders.html?id=${encodeURIComponent(DEMO)}`;
