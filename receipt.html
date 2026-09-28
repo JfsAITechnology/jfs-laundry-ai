@@ -6,12 +6,12 @@
 </style></head><body><main class="wrap"><header class="brand"><img src="logo-jfs.png"><div><h1 id="store">JFS Laundry AI</h1><p>Powered by JFS AI Technology</p></div></header><section class="card"><div id="loading">Memuat E-Receipt...</div><div id="receipt" hidden></div></section><p class="foot">E-Receipt resmi • Data berasal dari sistem JFS Laundry AI</p></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="supabase-config.js"></script><script src="customer-db.js"></script>
 <script>
-const p=new URLSearchParams(location.search),tenant= p.get('id')||'JFS-LAUNDRY-DEMO-001',order=p.get('order'),token=p.get('token'),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),idr=n=>Number(n||0).toLocaleString('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0});
+const p=new URLSearchParams(location.search);if(!window.jfsDb&&window.supabase&&window.JFS_SUPABASE_CONFIG){window.jfsDb=window.supabase.createClient(window.JFS_SUPABASE_CONFIG.url,window.JFS_SUPABASE_CONFIG.key)}const tenant= p.get('id')||'JFS-LAUNDRY-DEMO-001',order=p.get('order'),token=p.get('token'),esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),idr=n=>Number(n||0).toLocaleString('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0});
 const status={pending:'Menunggu Jemput',processing:'Dalam Proses',ready:'Siap Diambil',completed:'Selesai',cancelled:'Dibatalkan'},pay={unpaid:'BELUM DIBAYAR',pending:'MENUNGGU PEMBAYARAN',paid:'LUNAS',failed:'PEMBAYARAN GAGAL',refunded:'DIKEMBALIKAN'};
 function meta(o){try{return JSON.parse(o.notes||'{}')}catch{return{}}}
 async function load(){
  const box=document.getElementById('receipt');
- if(!order||!token||!window.jfsDb){document.getElementById('loading').innerHTML='<div class="error">Link E-Receipt tidak lengkap atau database belum tersedia.</div>';return}
+ if(!order||!token){document.getElementById('loading').innerHTML='<div class="error">Link E-Receipt tidak lengkap. Gunakan link yang dibuat setelah order berhasil.</div>';return}if(!window.jfsDb){document.getElementById('loading').innerHTML='<div class="error">Koneksi database belum siap. Muat ulang halaman beberapa detik lagi.</div>';return}
  const {data,error}=await jfsDb.rpc('jfs_track_customer_order',{p_tenant_code:tenant,p_external_id:order,p_tracking_token:token});
  if(error||!data){document.getElementById('loading').innerHTML='<div class="error">E-Receipt tidak ditemukan atau kode akses tidak cocok.</div>';return}
  document.getElementById('loading').hidden=true;box.hidden=false;document.getElementById('store').textContent=data.business_name||'JFS Laundry AI';
