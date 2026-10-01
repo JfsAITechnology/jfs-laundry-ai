@@ -11,13 +11,10 @@ if(location.pathname.endsWith('/index.html')) document.write('<script src="custo
 /* Admin price list UI fix. */
 if(location.pathname.endsWith('/admin.html')) document.write('<script src="admin-price-fix.js?v=20260914-1"><\/script>');
 /* Production owner access: login + trial/subscription gate. */
-if(['admin.html','orders.html','history.html','omzet.html','subscription.html'].includes(location.pathname.split('/').pop().toLowerCase()) && new URLSearchParams(location.search).get('id')!=='JFS-LAUNDRY-DEMO-001') document.write('<script type="module" src="production-access-guard.js?v=20260924-2"><\/script>');
+if(['admin.html','orders.html','history.html','omzet.html','subscription.html'].includes(location.pathname.split('/').pop().toLowerCase())) document.write('<script type="module" src="production-access-guard.js?v=20261001-1"><\/script>');
 /* Tenant admin subscription status: package, start, expiry and remaining days. */
 if(location.pathname.endsWith('/admin.html')) document.write('<script src="admin-subscription-status.js?v=20260914-3"><\/script>');
-/* Subscription page must persist real requests to Supabase; the page keeps a local demo fallback. */
+/* Subscription page persists real requests to Supabase. */
 if(location.pathname.endsWith('/subscription.html')) document.write('<script type="module" src="subscription-fix.js"><\/script>');
-/* Fixed public demo workflow. Production pages do not use these handlers. */
-if(location.pathname.endsWith('/admin.html')) document.write('<script src="demo-admin-public.js?v=20260916-2"><\/script>');
-if(location.pathname.endsWith('/orders.html')) document.write('<script src="demo-orders-public.js?v=20260916-1"><\/script>');
 /* Admin Dashboard UX enhancements: quick actions and clearer navigation. */
 if(location.pathname.endsWith('/admin.html')) document.write('<script src="admin-dashboard-ux.js?v=20260916-1"><\/script>');
