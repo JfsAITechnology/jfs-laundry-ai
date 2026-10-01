@@ -35,3 +35,4 @@ button:disabled{cursor:wait;opacity:.7;transform:none;box-shadow:none}
 .security-note{display:flex;justify-content:center;gap:7px;margin-top:17px;font-size:10px;color:#94a3b8}
 .footer-note{position:relative;z-index:1;margin:14px 0 0;text-align:center;font-size:10px;color:#94a3b8}
 @media (max-width:480px){.login-shell{padding:18px 14px}.login-card{padding:25px 20px;border-radius:20px}h1{font-size:26px}.brand-lockup{margin-bottom:28px}}
+\n.method-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}.method{padding:11px;border:1px solid #dbe3ee;background:#f8fafc;border-radius:10px;font-weight:800;cursor:pointer}.method.active{background:#eef2ff;border-color:#6366f1;color:#4338ca}.login-form small{display:block;margin-top:6px;color:#64748b;font-size:12px}.profile-title{font-weight:900;margin:4px 0 12px}.login-form [hidden]{display:none!important}
